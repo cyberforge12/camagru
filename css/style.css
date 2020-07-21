@@ -1,0 +1,24 @@
+header {
+    font-size: large;
+}
+
+#main {
+    font-style: oblique;
+    flex: content;
+    flex-direction: row;
+    font-size: 36px;
+}
+
+main {
+    width: 75%;
+
+}
+
+#side {
+    width: 25%;
+}
+
+footer {
+    font-family: Arial;
+    font-size: small;
+}
