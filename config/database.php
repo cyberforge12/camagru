@@ -1,10 +1,11 @@
 <?php
-$DB_FILE = ROOT_PATH.'db/camagru.sqlite';
+$DB_FILE = ROOT_PATH . 'db/' . DB_NAME;
 $DB_DSN = 'sqlite:' . $DB_FILE;
 $DB_USER = 'dbuser';
 $DB_PASSWORD = 'dbpass';
-$sql_create = '';
 $sql_create_db = "create database `camagru`;";
+
+mkdir(ROOT_PATH . 'db');
 
 try {
     $dbh = new PDO($DB_DSN, $DB_USER, $DB_PASSWORD);
