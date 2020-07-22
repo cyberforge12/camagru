@@ -11,23 +11,24 @@ include_once (ROOT_PATH.'config/setup.php');
 	<script type="text/javascript" src="js/script.js"></script>
 </head>
 <body>
-<header onclick="change_style() ondblclick="reduce_font()">
-Header
+<header onclick="change_style()" class="header">
+	<div>Login</div>
+	<div>Log In...</div>
+	<div>Log Out...</div>
 </header>
-<section id="main">
+<section class="content">
 
-<main>
+<main class="main">
 Main
 
 </main>
-<section id="side">
+<section class="side">
     Side
 </section>
 
 </section>
-<footer>
-Footer
-
+<footer class="footer">
+	<div>&copy;mmanhack @ school 21</div>
 </footer>
 </body>
 </html>

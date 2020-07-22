@@ -1,24 +1,51 @@
-header {
-    font-size: large;
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    justify-content: center;
 }
 
-#main {
+.header {
+    display: flex;
+    flex: 1;
+    font-size: large;
+    background-color: gray;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+}
+
+.content {
+    flex: 15;
     font-style: oblique;
-    flex: content;
     flex-direction: row;
     font-size: 36px;
 }
 
-main {
+.main {
     width: 75%;
-
 }
 
-#side {
+.header > div {
+    margin: 10px;
+    background-color: red;
+    width: 10%;
+    alignment: center;
+    text-align: center;
+}
+
+.side {
     width: 25%;
 }
 
 footer {
     font-family: Arial;
     font-size: small;
+    text-align: right;
+    align-items: flex-end;
+}
+
+.footer > div {
+    width: 200px;
+    background-color: blue;
 }
