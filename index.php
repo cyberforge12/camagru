@@ -8,7 +8,6 @@ include_once (ROOT_PATH.'config/setup.php');
 	<meta charset="UTF-8">
 	<link rel="stylesheet" href="css/style.css">
 	<title>Title</title>
-	<script type="text/javascript" src="js/script.js"></script>
 </head>
 <body>
 <header onclick="change_style()" class="header">
@@ -22,7 +21,7 @@ include_once (ROOT_PATH.'config/setup.php');
 Main
 	<div>
 		Video
-		<video id="cam" autoplay></video>
+		<video id="cam" src="" autoplay></video>
 	</div>
 
 </main>
@@ -35,4 +34,5 @@ Main
 	<div>&copy;mmanhack @ school 21</div>
 </footer>
 </body>
+<script type="text/javascript" src="js/script.js"></script>
 </html>

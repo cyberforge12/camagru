@@ -1,14 +1,27 @@
-// let video = document.getElementById("cam");
+var video = document.getElementById('cam');
 
-if (navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia({video: true})
-        .then(function (stream) {
+navigator.mediaDevices.getUserMedia({video: true})
+    .then(function (stream) {
+        if (stream)
             video.srcObject = stream;
-        })
-        .catch(function (error) {
-            document.getElementById("cam").innerText = "Can't access webcam!";
-        })
-}
+    })
+    .catch(function (reason) {
+        if (reason)
+            video.style.backgroundColor = 'red';
+    });
+
+
+// var video = document.getElementById("cam");
+//
+// if (navigator.mediaDevices.getUserMedia) {
+//     navigator.mediaDevices.getUserMedia({video: true})
+//         .then(function (stream) {
+//             video.srcObject = stream;
+//         })
+//         .catch(function (error) {
+//             document.getElementById("cam").innerText = "Can't access webcam!";
+//         })
+// }
 
 
 function change_style() {
