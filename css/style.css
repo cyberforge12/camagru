@@ -38,7 +38,17 @@ body {
     width: 25%;
 }
 
-footer {
+#cam {
+    width: 300px;
+    height: 200px;
+    background-color: gray;
+}
+
+.footer {
+    flex: 1;
+    flex-direction: row;
+    justify-content: center;
+    background-color: green;
     font-family: Arial;
     font-size: small;
     text-align: right;

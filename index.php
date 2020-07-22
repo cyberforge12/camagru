@@ -20,6 +20,10 @@ include_once (ROOT_PATH.'config/setup.php');
 
 <main class="main">
 Main
+	<div>
+		Video
+		<video id="cam" autoplay></video>
+	</div>
 
 </main>
 <section class="side">
