@@ -1,18 +1,46 @@
 body {
+    border: 3px solid red;
     display: flex;
-    min-height: 100vh;
     flex-direction: column;
     justify-content: center;
+    min-height: 93vh;
+    font-family: Arial, sans-serif;
+}
+
+* {
+    border: 1px solid green;
 }
 
 .header {
     display: flex;
     flex: 1;
     font-size: large;
-    background-color: gray;
     flex-direction: row;
     flex-wrap: nowrap;
     justify-content: flex-end;
+    align-items: center;
+}
+
+#header_text {
+    font-size: x-large;
+    margin-left: 25px;
+    margin-right: auto;
+    justify-self: start;
+    text-shadow: 5px 5px 5px gray;
+}
+
+.user {
+    margin: 10px;
+}
+
+#login_form {
+    position: absolute;
+    top: 150px;
+    right: 0;
+    min-width: 100px;
+    min-height: 50px;
+    border: 3px solid red;
+    z-index: 2;
 }
 
 .content {
@@ -23,15 +51,8 @@ body {
 }
 
 .main {
+    max-height: 75%;
     width: 75%;
-}
-
-.header > div {
-    margin: 10px;
-    background-color: red;
-    width: 10%;
-    alignment: center;
-    text-align: center;
 }
 
 .side {
@@ -39,23 +60,31 @@ body {
 }
 
 #cam {
-    width: 300px;
-    height: 200px;
+    max-width: 100%;
     background-color: gray;
 }
 
 .footer {
-    flex: 1;
-    flex-direction: row;
-    justify-content: center;
-    background-color: green;
     font-family: Arial;
     font-size: small;
     text-align: right;
-    align-items: flex-end;
+    vertical-align: center;
 }
 
-.footer > div {
-    width: 200px;
-    background-color: blue;
+.login {
+    cursor: pointer;
+    content: url('https://api.iconify.design/bi:person-circle.svg?height=32');
+    vertical-align: -0.125em;
+}
+
+.logged {
+    cursor: pointer;
+    content: url('https://api.iconify.design/bi:person-check-fill.svg?height=32');
+    vertical-align: -0.125em;
+}
+
+.logout {
+    cursor: pointer;
+    content: url('https://api.iconify.design/bi:box-arrow-right.svg?height=32');
+    vertical-align: -0.125em;
 }
