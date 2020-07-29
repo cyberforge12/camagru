@@ -5,9 +5,10 @@ $DB_USER = 'dbuser';
 $DB_PASSWORD = 'dbpass';
 $sql_create_db = "create database `camagru.sqlite`;";
 
-mkdir(ROOT_PATH . 'db');
+@mkdir(ROOT_PATH . 'db');
 
 try {
+    global $dbh;
     $dbh = new PDO($DB_DSN, $DB_USER, $DB_PASSWORD);
     $dbh->exec($sql_create_db);
     $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -29,6 +30,12 @@ try {
         id integer primary key,
         like_user REFERENCES users(login),
         like_photo REFERENCES photos(id))');
+    $dbh->exec('create table if not exists sessions(
+        session_id,
+        date,
+        session_user REFERENCES users(login))');
+//    $sess_id = $_SESSION[PHPSESSID];
+//    $dbh->exec('insert into sessions VALUES ($sess_id, 2, 3)');
 } catch (PDOException $e) {
     echo 'Подключение не удалось: ' . $e->getMessage(); //TODO: REMOVE
 }
