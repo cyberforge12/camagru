@@ -16,12 +16,13 @@ include_once (ROOT_PATH.'config/setup.php');
 	<div>Log Out...</div>
 </header>
 <section class="content">
-
-<main class="main">
-Main
-	<div>
-		Video
-		<video id="cam" src="" autoplay></video>
+<main class="main" id="main">
+	<div id="pics">
+		<img src="img/discount.png" onclick="add_img()" alt="discount">
+		<img src="img/stars.png" onclick="add_img()" alt="stars">
+		<img src="img/think.png" onclick="add_img()" alt="stars">
+		<img src="img/frame.png" onclick="add_img()" alt="frame">
+		<img src="img/none.png" onclick="clear_img()" alt="clear img">
 	</div>
 
 </main>

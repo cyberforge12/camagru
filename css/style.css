@@ -55,6 +55,18 @@ body {
     width: 75%;
 }
 
+#pics {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: baseline;
+}
+
+#pics img {
+    max-width: 150px;
+    max-height: 150px;
+}
+
 .side {
     width: 25%;
 }

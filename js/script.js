@@ -34,3 +34,19 @@ function reduce_font() {
     document.getElementById('content').style.fontSize
 
 }
+
+function form_login(email, passw) {
+
+    alert('FORM OK!');
+
+}
+
+function add_img() {
+    console.log('Image added to cam!');
+
+}
+
+function clear_img() {
+    console.log('Image cleared');
+
+}
