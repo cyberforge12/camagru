@@ -42,10 +42,12 @@ include_once (ROOT_PATH . 'login.php');
 		<img src="img/frame.png" onclick="add_img()" alt="frame">
 		<img src="img/none.png" onclick="clear_img()" alt="clear img">
 	</div>
-
+	<div id="videoContainer">
+		<video id="cam" src="" autoplay></video>
+	</div>
 </main>
 <section class="side">
-    Side
+	<canvas id="canvas"></canvas>
 </section>
 
 </section>
