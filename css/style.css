@@ -4,6 +4,7 @@ body {
     flex-direction: column;
     justify-content: center;
     min-height: 93vh;
+    max-height: 93vh;
     font-family: Arial, sans-serif;
 }
 
@@ -58,14 +59,19 @@ body {
 }
 
 .content {
-    flex: 15;
-    font-style: oblique;
+    display: flex;
+    align-items: stretch;
+    flex-grow: 1;
+    flex-shrink: 1;
     flex-direction: row;
+    font-style: oblique;
     font-size: 36px;
 }
 
-.main {
-    max-height: 75%;
+#main {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     width: 75%;
 }
 
@@ -85,10 +91,16 @@ body {
     width: 25%;
 }
 
-#cam {
-    max-width: 100%;
-    background-color: gray;
+#videoContainer {
 }
+
+#cam {
+    height: 100px;
+}
+
+/*#cam {*/
+/*    object-fit: cover;*/
+/*}*/
 
 .footer {
     font-family: Arial;
