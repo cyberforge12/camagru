@@ -1,20 +1,38 @@
 <?php
 define('ROOT_PATH', __DIR__ . '/');
-include_once (ROOT_PATH.'config/setup.php');
+include_once (ROOT_PATH . 'config/setup.php');
+include_once (ROOT_PATH . 'login.php');
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<link rel="stylesheet" href="css/style.css">
-	<title>Title</title>
+	<title>Camagru</title>
 </head>
 <body>
-<header onclick="change_style()" class="header">
-	<div>Login</div>
-	<div>Log In...</div>
-	<div>Log Out...</div>
+<div class="test" id="test" onmouseover="test_over(this)"
+	 onmouseleave="test_leave(this)
+">TEST
+	CLASS
+	- ONCLICK</div>
+<header class="header">
+	<div id="header_text">CAMAGRU</div>
+	<div class="logged user" onclick="open_profile()"></div>
+	<div class="login user" onclick="login(this)"></div>
+	<div class="logout user" onclick="logout()"></div>
 </header>
+<form id="login_form" method="post">
+	Log in
+	<hr>
+	<input type="email" required autofocus name="email" placeholder="e-mail">
+	<input type="password" required name="passw"
+		   placeholder="password">
+	<div id="login_buttons">
+		<button type="submit" name="action" value="reg">Register</button>
+		<button type="submit" name="action" value="login">Login</button>
+	</div>
+</form>
 <section class="content">
 <main class="main" id="main">
 	<div id="pics">
@@ -31,9 +49,7 @@ include_once (ROOT_PATH.'config/setup.php');
 </section>
 
 </section>
-<footer class="footer">
-	<div>&copy;mmanhack @ school 21</div>
-</footer>
+<footer class="footer">&copy;mmanhack @ school 21</footer>
 </body>
 <script type="text/javascript" src="js/script.js"></script>
 </html>
