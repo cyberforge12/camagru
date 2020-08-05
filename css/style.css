@@ -110,19 +110,16 @@ body {
 }
 
 .login {
+    height: 64px;
     cursor: pointer;
-    content: url('https://api.iconify.design/bi:person-circle.svg?height=32');
-    vertical-align: -0.125em;
 }
 
-.logged {
+.profile {
+    height: 64px;
     cursor: pointer;
-    content: url('https://api.iconify.design/bi:person-check-fill.svg?height=32');
-    vertical-align: -0.125em;
 }
 
 .logout {
+    height: 64px;
     cursor: pointer;
-    content: url('https://api.iconify.design/bi:box-arrow-right.svg?height=32');
-    vertical-align: -0.125em;
 }

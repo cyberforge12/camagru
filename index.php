@@ -18,9 +18,10 @@ include_once (ROOT_PATH . 'login.php');
 	- ONCLICK</div>
 <header class="header">
 	<div id="header_text">CAMAGRU</div>
-	<div class="logged user" onclick="open_profile()"></div>
-	<div class="login user" onclick="login(this)"></div>
-	<div class="logout user" onclick="logout()"></div>
+	<img src="img/login.svg" class="login user" id="login" onclick="login(this)">
+	<img src="img/profile.svg" class="profile user" id="profile" onclick="open_profile
+	()">
+	<img src="img/logout.svg" class="logout user" id="logout" onclick="logout()">
 </header>
 <form id="login_form" method="post">
 	Log in
