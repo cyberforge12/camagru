@@ -165,7 +165,8 @@ function get_profile($arr, PDO $dbh) {
 }
 
 function check_session(PDO $dbh) {
-    if (!empty(get_session_user($dbh)[0][0]))
+    $user = get_session_user($dbh);
+    if (!empty($user[0][0]))
         return ['status' => 'OK', 'message' => 'Session login OK'];
     else
         return ['status' => 'ERROR', 'message' => 'No session login'];
