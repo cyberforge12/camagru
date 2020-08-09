@@ -12,10 +12,6 @@ body {
     border: 1px solid green;
 }
 
-#login_form hr {
-    width: 95%;
-}
-
 .header {
     display: flex;
     flex-basis: auto;
@@ -38,7 +34,24 @@ body {
     margin: 10px;
 }
 
+.profile {
+    padding: 5px;
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    width: 300px;
+    top: 150px;
+    right: 15px;
+    min-width: 100px;
+    min-height: 50px;
+    border: 1px solid black;
+    box-shadow: 0px 0px 10px gray;
+    z-index: 2;
+}
+
 #login_form {
+    padding: 5px;
+    background-color: white;
     flex-direction: column;
     display: none;
     position: absolute;
@@ -52,10 +65,23 @@ body {
     z-index: 2;
 }
 
+#login_form > * {
+    margin: 5px;
+    display: flex;
+}
+
+#hr {
+    width: 95%;
+}
+
 #login_buttons {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+}
+
+#login_message {
+    color: red;
 }
 
 .content {
@@ -85,10 +111,7 @@ body {
 #pics img {
     max-width: 150px;
     max-height: 150px;
-}
-
-.side {
-    width: 25%;
+    box-sizing: border-box;
 }
 
 #videoContainer {
@@ -102,24 +125,51 @@ body {
 /*    object-fit: cover;*/
 /*}*/
 
+.side {
+    display: flex;
+    width: 25%;
+}
+
+#gallery {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.gallery_item {
+    display: flex;
+}
+
+.gallery_item_img_holder {
+    display: flex;
+    flex-direction: row;
+}
+
+.gallery_item_img {
+}
+
+.gallery_item_img_actions {
+    width: 50px;
+}
+
+
 .footer {
     font-family: Arial;
     font-size: small;
     text-align: right;
-    vertical-align: center;
 }
 
-.login {
+.login_icon {
     height: 64px;
     cursor: pointer;
 }
 
-.profile {
+.profile_icon {
     height: 64px;
     cursor: pointer;
 }
 
-.logout {
+.logout_icon {
     height: 64px;
     cursor: pointer;
 }

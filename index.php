@@ -1,5 +1,5 @@
 <?php
-define('ROOT_PATH', __DIR__ . '/');
+require_once('constants.php');
 include_once (ROOT_PATH . 'config/setup.php');
 include_once (ROOT_PATH . 'login.php');
 ?>
@@ -15,44 +15,81 @@ include_once (ROOT_PATH . 'login.php');
 	 onmouseleave="test_leave(this)
 ">TEST
 	CLASS
-	- ONCLICK</div>
+	- ONCLICK <?=print_r($_COOKIE)?></div>
 <header class="header">
 	<div id="header_text">CAMAGRU</div>
-	<img src="img/login.svg" class="login user" id="login" onclick="login(this)">
-	<img src="img/profile.svg" class="profile user" id="profile" onclick="open_profile
-	()">
-	<img src="img/logout.svg" class="logout user" id="logout" onclick="logout()">
+	<img src="img/login.svg" class="login_icon user" id="login_icon"
+		 onclick="login_form_toggle(this)" hidden>
+	<img src="img/profile.svg" class="profile_icon user" id="profile_icon"
+		 onclick="open_profile
+	()" hidden>
+	<img src="img/logout.svg" class="logout_icon user" id="logout_icon"
+		 onclick="logout
+	()" hidden>
 </header>
-<form id="login_form" method="post">
+<form id="login_form" action="">
 	Log in
 	<hr>
-	<input type="email" required autofocus name="email" placeholder="e-mail">
-	<input type="password" required name="passw"
+	<input id="login_input" type="email" required autofocus name="email"
+		   placeholder="e-mail">
+	<input id="passw_input" type="password" required name="passw"
 		   placeholder="password">
 	<div id="login_buttons">
-		<button type="submit" name="action" value="reg">Register</button>
-		<button type="submit" name="action" value="login">Login</button>
+		<button type="button" onclick="register()" name="action"
+				value="reg">Register</button>
+		<button type="button" onclick="login()" name="action"
+				value="login">Login</button>
 	</div>
+	<div id="login_message"></div>
 </form>
+<section class="profile" id="profile" hidden>
+	Profile
+	<hr id="hr">
+	<div id="profile_username"></div>
+	<div id="profile_email"></div>
+	<div id="profile_email_conf"></div>
+	<label for="profile_notify">Notify on updates to your photos?</label>
+	<input id="profile_notify" type="checkbox">
+	<button id="button_confirmation">Resend confirmation e-mail</button>
+</section>
 <section class="content">
 <main class="main" id="main">
 	<div id="pics">
-		<img src="img/discount.png" onclick="add_img()" alt="discount">
-		<img src="img/stars.png" onclick="add_img()" alt="stars">
-		<img src="img/think.png" onclick="add_img()" alt="stars">
-		<img src="img/frame.png" onclick="add_img()" alt="frame">
-		<img src="img/none.png" onclick="clear_img()" alt="clear img">
+		<img id="discount"  src="img/discount.png" onclick="select_img(this)"
+			 alt="discount">
+		<img id="stars"  src="img/stars.png" onclick="select_img(this)"
+			 alt="stars">
+		<img id="think"  src="img/think.png" onclick="select_img(this)"
+			 alt="stars">
+		<img id="frame"  src="img/frame.png" onclick="select_img(this)"
+			 alt="frame">
+		<img id="none"  src="img/none.png" onclick="select_img(this)" alt="clear
+		 img">
 	</div>
 	<div id="videoContainer">
-		<video id="cam" src="" autoplay></video>
+		<video id="cam" src="" autoplay poster="img/none.png"></video>
+		<button id="snapshot" onclick="snapshot()"
+				disabled hidden>SNAPSHOT!</button>
+		<form id="upload" enctype="multipart/form-data" action="" hidden>
+			<input type="hidden" name="cam" value="">
+			<input type="hidden" id="img_name" name="img_name" value="">
+			<input type="hidden" name="MAX_FILE_SIZE" value="3000000" />
+			<label for="form_file">Choose photo to upload: </label>
+			<input id="form_file" name="form_file" placeholder="Choose
+			photo to upload..." type="file">
+			<button id="upload_button" type="button"
+					onclick="upload_fetch()" disabled
+					title="Select as overlay image above">Submit</button>
+		</form>
 	</div>
 </main>
 <section class="side">
+	<section id="gallery"></section>
 	<canvas id="canvas"></canvas>
 </section>
 
 </section>
 <footer class="footer">&copy;mmanhack @ school 21</footer>
-</body>
 <script type="text/javascript" src="js/script.js"></script>
+</body>
 </html>

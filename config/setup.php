@@ -1,13 +1,10 @@
 <?php
-// protection against session fixation
-$cookie_name = "user";
-if(!isset($_COOKIE[$cookie_name]))
-	setcookie($cookie_name, null, time() + (86400 * 30), "/");
+require_once (ROOT_PATH . 'SessionHandlerSQL.class.php');
+include_once (ROOT_PATH . 'config/database.php');
+$session_handler = new SessionHandlerSQL($dbh);
+session_set_save_handler($session_handler);
 session_start();
-define('DB_NAME', 'camagru.sqlite');
-$recreate = false;
-//print_r($_SERVER);
-//print_r($_SESSION);
+// protection against session fixation
 //if (isset($_GET['LOGOUT']) ||
 //    $_SERVER['REMOTE_ADDR'] !== $_SESSION['PREV_REMOTEADDR'] ||
 //    $_SERVER['HTTP_USER_AGENT'] !== $_SESSION['PREV_USERAGENT'])
@@ -17,15 +14,4 @@ $recreate = false;
 //$_SESSION['PREV_REMOTEADDR'] = $_SERVER['REMOTE_ADDR'];
 // end of protection
 
-
-if (file_exists(ROOT_PATH . 'db/' . DB_NAME))
-{
-    if ($recreate == true)
-    {
-        unlink(ROOT_PATH . 'db/' . DB_NAME);
-        include (ROOT_PATH . 'config/database.php');
-    }
-}
-else
-    include_once (ROOT_PATH . 'config/database.php');
 

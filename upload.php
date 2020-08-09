@@ -140,11 +140,12 @@ function get_session_user (PDO $dbh) {
     $sth = $dbh->prepare($request);
     $sth->bindValue(1, session_id(), PDO::PARAM_STR);
     $sth->execute();
-    return $sth->fetch()[0];
+    $ret = $sth->fetchAll();
+    return $ret;
 }
 
 function get_profile($arr, PDO $dbh) {
-    $user = get_session_user($dbh);
+    $user = get_session_user($dbh)[0][0];
     if (!empty($user))
     {
         $sth = $dbh->prepare('SELECT email,
@@ -164,7 +165,7 @@ function get_profile($arr, PDO $dbh) {
 }
 
 function check_session(PDO $dbh) {
-    if (!empty(get_session_user($dbh)))
+    if (!empty(get_session_user($dbh)[0][0]))
         return ['status' => 'OK', 'message' => 'Session login OK'];
     else
         return ['status' => 'ERROR', 'message' => 'No session login'];
