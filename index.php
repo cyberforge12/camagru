@@ -45,12 +45,24 @@ include_once (ROOT_PATH . 'login.php');
 <section class="profile" id="profile" hidden>
 	Profile
 	<hr id="hr">
-	<div id="profile_username"></div>
-	<div id="profile_email"></div>
-	<div id="profile_email_conf"></div>
-	<label for="profile_notify">Notify on updates to your photos?</label>
-	<input id="profile_notify" type="checkbox">
-	<button id="button_confirmation">Resend confirmation e-mail</button>
+	<div>
+		<label for="profile_username">Login:</label>
+		<section id="profile_username"></section>
+	</div>
+	<div>
+		<label for="profile_email">E-mail:</label>
+		<section id="profile_email"></section>
+	</div>
+	<div>
+		<label for="profile_email_conf">E-mail confirmed?</label>
+		<section id="profile_email_conf"></section>
+	</div>
+	<div>
+		<label for="profile_notify">Notify on updates to your photos?</label>
+		<input id="profile_notify" type="checkbox">
+	</div>
+	<button id="button_confirmation" onclick="resend_confirmation()">Resend
+		confirmation e-mail</button>
 </section>
 <section class="content">
 <main class="main" id="main">

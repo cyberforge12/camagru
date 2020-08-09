@@ -105,6 +105,8 @@ function send_confirmation(string $email, PDO $dbh) {
         return mail($email, 'Camagru e-mail confirmation',
         'Please follow the link below to confirm your e-mail:' . PHP_EOL
     . $_SERVER['HTTP_HOST'] . '/confirmation.php?link=' . $link);
+    else
+        return 0;
 }
 
 function register ($arr, $dbh) {
@@ -144,21 +146,47 @@ function get_session_user (PDO $dbh) {
     return $ret;
 }
 
+function resend_confirmation(PDO $dbh) {
+    $user = get_session_user($dbh)[0][0];
+    if (!empty($user))
+    {
+        $sth = $dbh->prepare('SELECT email FROM users WHERE login = ?');
+        $sth->bindValue(1, $user, PDO::PARAM_STR);
+        if ($sth->execute())
+        {
+            if (!empty(($email = $sth->fetch())))
+            {
+                if (!send_confirmation($email[0], $dbh))
+                    return ['status' => 'OK', 'message' => 'Confirmation letter sent'];
+                else
+                    return ['status' => 'ERROR', 'message' => 'Mail error'];
+            }
+            else
+                return ['status' => 'ERROR', 'message' => 'Database error'];
+        }
+        else
+            return ['status' => 'ERROR', 'message' => 'Database error'];
+    }
+    else
+        return ['status' => 'ERROR', 'message' => 'No session login'];
+}
+
 function get_profile($arr, PDO $dbh) {
     $user = get_session_user($dbh)[0][0];
     if (!empty($user))
     {
-        $sth = $dbh->prepare('SELECT email,
+        $sth = $dbh->prepare('SELECT login, email,
             is_confirmed, notify FROM users WHERE login = ?');
         $sth->bindValue(1, $user, PDO::PARAM_STR);
         if ($sth->execute())
         {
             if (!empty(($data = $sth->fetch())))
                 return $data;
+            else
+                return ['status' => 'ERROR', 'message' => 'Database error'];
         }
         else
             return ['status' => 'ERROR', 'message' => 'Database error'];
-
     }
     else
         return ['status' => 'ERROR', 'message' => 'No session login'];
@@ -191,6 +219,8 @@ if (isset($dbh))
         $ret = register($arr, $dbh);
     elseif ($arr->action === 'get_profile')
         $ret = get_profile($arr, $dbh);
+    elseif ($arr->action === 'resend')
+        $ret = resend_confirmation($dbh);
 }
 else
     $ret = ['status' => 'ERROR', 'message' => 'Database error'];

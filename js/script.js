@@ -113,11 +113,29 @@ function register() {
     console.log("Register button pressed");
 }
 
-function fill_profile ({email, login, is_confirmed, notify}) {
-    document.getElementById('profile_username').innerHTML = login;
-    document.getElementById('profile_email').innerHTML = email;
-    document.getElementById('profile_email_conf').innerHTML = is_confirmed;
+function fill_profile (xhhtp) {
+    let response;
+    if (xhhtp.readyState === 4 && xhhtp.status === 200) {
+        response = JSON.parse(xhhtp.response);
+        document.getElementById('profile_username').innerHTML = response.login;
+        document.getElementById('profile_email').innerHTML = response.email;
+        if (response.is_confirmed === '1') {
+            document.getElementById('profile_email_conf').innerHTML = 'YES';
+            document.getElementById('profile_email_conf').style.color = 'green';
+        } else {
+            document.getElementById('profile_email_conf').innerHTML = 'NO';
+            document.getElementById('profile_email_conf').style.color = 'red';
+        }
+        if (response.notify == true)
+            document.getElementById('profile_notify').checked;
+    }
     console.log('Show profile');
+}
+
+function resend_confirmation() {
+    sendJSON({"action": "resend"}, () => {
+        document.getElementById('button_confirmation').innerHTML = 'Confirmation sent';
+    });
 }
 
 function open_profile() {
@@ -129,8 +147,10 @@ function open_profile() {
             fill_profile(e);
         });
     }
-    else
+    else {
         profile.style.display = '';
+        document.getElementById('button_confirmation').innerHTML = 'Resend confirmation e-mail';
+    }
     console.log('Open profile pressed');
 }
 
@@ -310,5 +330,3 @@ test.onclick = function () {
 
 document.getElementById('login_icon').innerHTML =
     '<object type="image/svg+xml" data="img/login.svg"></object>'
-
-check_session();
