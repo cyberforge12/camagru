@@ -1,6 +1,4 @@
 var video = document.getElementById('cam');
-var canvas = document.getElementById('canvas');
-var context = canvas.getContext('2d');
 var localMediaStream = null;
 var selected_img = null;
 var display_login = false;
@@ -113,10 +111,10 @@ function register() {
     console.log("Register button pressed");
 }
 
-function fill_profile (xhhtp) {
+function fill_profile (xhttp) {
     let response;
-    if (xhhtp.readyState === 4 && xhhtp.status === 200) {
-        response = JSON.parse(xhhtp.response);
+    if (xhttp.readyState === 4 && xhttp.status === 200) {
+        response = JSON.parse(xhttp.response);
         document.getElementById('profile_username').innerHTML = response.login;
         document.getElementById('profile_email').innerHTML = response.email;
         if (response.is_confirmed === '1') {
@@ -126,7 +124,7 @@ function fill_profile (xhhtp) {
             document.getElementById('profile_email_conf').innerHTML = 'NO';
             document.getElementById('profile_email_conf').style.color = 'red';
         }
-        if (response.notify == true)
+        if (response.notify === true)
             document.getElementById('profile_notify').checked;
     }
     console.log('Show profile');
@@ -175,11 +173,6 @@ function reduce_font() {
     document.getElementById('content').style.fontSize
 }
 
-function form_login(email, passw) {
-
-    alert('FORM OK!');
-}
-
 function select_img(item) {
     if (selected_img)
     {
@@ -219,10 +212,20 @@ function clear_img() {
 }
 
 function snapshot() {
+    let canvas = document.createElement('canvas');
+    let context = canvas.getContext('2d');
+    canvas.width = 640;
+    canvas.height = 480;
     if (localMediaStream && context) {
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        context.drawImage(selected_img, 0, 0, 50, 50);
-        canvas.src = canvas.toDataURL('img/webp');
+        let obj = {};
+        obj.action = 'image_upload';
+        obj.img_name = selected_img.id;
+        obj.data = canvas.toDataURL().split(',')[1];
+        sendJSON(obj, (e) => {
+            if (e.readyState === 4 && e.status === 200)
+                load_gallery();
+        });
     }
 }
 
@@ -230,16 +233,6 @@ function parse_gallery(e) {
     e.forEach((elem) => {
        alert (elem);
     });
-}
-
-function load_gallery() {
-    var request = JSON.stringify({"action": "get_gallery"});
-    var xhhtp = new XMLHttpRequest();
-    xhhtp.onreadystatechange = e => parse_gallery(e);
-    xhhtp.open('POST', 'gallery.php', true);
-    xhhtp.setRequestHeader('Content-Type', "application/json");
-    xhhtp.send(request);
-    return xhhtp.response;
 }
 
 function sendJSON(obj, callback) {
@@ -257,9 +250,38 @@ function sendJSON(obj, callback) {
     }
 }
 
-function upload_file() {
+function show_gallery(xhttp) {
+    let response;
+    if (xhttp.readyState === 4 && xhttp.status === 200) {
+        response = JSON.parse(xhttp.response);
+        if (response.rows > 0)
+        {
+            response.data.forEach(function (item, i, arr) {
+                let gallery_item = document.createElement('img');
+                document.getElementById('gallery').appendChild(gallery_item);
+                gallery_item.id = item.rowid;
+                gallery_item.className = 'gallery_item';
+                gallery_item.src = 'data:image/png;base64, ' + item.photo;
+            })
+            if (response.rows == 10)
+                document.getElementById('gallery_more').removeAttribute('hidden');
+            else
+                document.getElementById('gallery_more').setAttribute('hidden');
+        }
+    }
+}
+
+function load_gallery() {
+    let new_gal = document.getElementById('gallery').cloneNode(false);
+    document.getElementById('gallery').remove();
+    document.getElementById('side').prepend(new_gal);
+    sendJSON({'action': 'get_gallery'}, show_gallery);
+}
+
+
+function upload_snapshot() {
     var file = document.getElementById('form_file');
-    var obj = {'file':file, 'img_name':selected_img.src, };
+    var obj = {'action': 'image_upload', 'img_name':selected_img.src, 'data': file};
     return sendJSON(obj, null);
 }
 
@@ -271,7 +293,7 @@ function upload_fetch() {
     obj.img_name = selected_img.id;
     obj.action = 'image_upload';
     reader.onload = e => {
-        obj.content = e.target.result.split(',')[1];
+        obj.data = e.target.result.split(',')[1];
         let request = JSON.stringify(obj);
         return fetch('upload.php', {
             method: 'POST',
@@ -301,7 +323,7 @@ function check_session () {
 }
 
 document.onload = check_session();
-
+document.onload = load_gallery();
 navigator.mediaDevices.getUserMedia({video: true})
     .then(function (stream) {
         if (stream)
@@ -328,5 +350,3 @@ test.onclick = function () {
     test.style.backgroundColor = 'green';
 }
 
-document.getElementById('login_icon').innerHTML =
-    '<object type="image/svg+xml" data="img/login.svg"></object>'

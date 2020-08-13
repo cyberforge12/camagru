@@ -6,13 +6,17 @@ body {
     min-height: 93vh;
     max-height: 93vh;
     font-family: Arial, sans-serif;
+    overflow: auto;
 }
 
 * {
+    box-sizing: border-box;
+    background-color: white;
     border: 1px solid green;
 }
 
 .header {
+    height: 13vh;
     display: flex;
     flex-basis: auto;
     font-size: large;
@@ -45,10 +49,24 @@ body {
     min-width: 100px;
     min-height: 50px;
     border: 1px solid black;
-    box-shadow: 0px 0px 10px gray;
+    box-shadow: 0 0 10px gray;
     z-index: 2;
 }
 
+.login_icon {
+    height: 100%;
+    cursor: pointer;
+}
+
+.profile_icon {
+    height: 100%;
+    cursor: pointer;
+}
+
+.logout_icon {
+    height: 100%;
+    cursor: pointer;
+}
 #login_form {
     padding: 5px;
     background-color: white;
@@ -61,7 +79,7 @@ body {
     min-width: 100px;
     min-height: 50px;
     border: 1px solid black;
-    box-shadow: 0px 0px 10px gray;
+    box-shadow: 0 0 10px gray;
     z-index: 2;
 }
 
@@ -85,6 +103,7 @@ body {
 }
 
 .content {
+    height: 70vh;
     display: flex;
     align-items: stretch;
     flex-grow: 1;
@@ -99,6 +118,7 @@ body {
     flex-direction: column;
     align-items: stretch;
     width: 75%;
+    max-height: 100%;
 }
 
 #pics {
@@ -115,6 +135,7 @@ body {
 }
 
 #videoContainer {
+    max-height: 100%;
 }
 
 #cam {
@@ -128,16 +149,20 @@ body {
 .side {
     display: flex;
     width: 25%;
+    overflow: scroll;
 }
 
 #gallery {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
+    overflow: scroll;
+    max-height: 100%;
+    /*flex: 0 1 auto;*/
+    /*flex-direction: column;*/
 }
 
 .gallery_item {
-    display: flex;
+    /*display: flex;*/
+    width: 100%;
+    padding: 10px;
 }
 
 .gallery_item_img_holder {
@@ -154,22 +179,8 @@ body {
 
 
 .footer {
-    font-family: Arial;
+    height: 10vh;
+    font-family: Arial, sans-serif;
     font-size: small;
     text-align: right;
-}
-
-.login_icon {
-    height: 64px;
-    cursor: pointer;
-}
-
-.profile_icon {
-    height: 64px;
-    cursor: pointer;
-}
-
-.logout_icon {
-    height: 64px;
-    cursor: pointer;
 }

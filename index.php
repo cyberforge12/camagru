@@ -11,21 +11,19 @@ include_once (ROOT_PATH . 'login.php');
 	<title>Camagru</title>
 </head>
 <body>
-<div class="test" id="test" onmouseover="test_over(this)"
-	 onmouseleave="test_leave(this)
-">TEST
-	CLASS
-	- ONCLICK <?=print_r($_COOKIE)?></div>
+<!--<div class="test" id="test" onmouseover="test_over(this)"-->
+<!--	 onmouseleave="test_leave(this)-->
+<!--">TEST-->
+<!--	CLASS-->
+<!--	- ONCLICK --><?//=print_r($_COOKIE)?><!--</div>-->
 <header class="header">
 	<div id="header_text">CAMAGRU</div>
 	<img src="img/login.svg" class="login_icon user" id="login_icon"
-		 onclick="login_form_toggle(this)" hidden>
+		 onclick="login_form_toggle(this)" alt="Login" hidden>
 	<img src="img/profile.svg" class="profile_icon user" id="profile_icon"
-		 onclick="open_profile
-	()" hidden>
+		 onclick="open_profile()" alt="Open profile" hidden>
 	<img src="img/logout.svg" class="logout_icon user" id="logout_icon"
-		 onclick="logout
-	()" hidden>
+		 onclick="logout()" alt="Logout" hidden>
 </header>
 <form id="login_form" action="">
 	Log in
@@ -95,9 +93,9 @@ include_once (ROOT_PATH . 'login.php');
 		</form>
 	</div>
 </main>
-<section class="side">
+<section class="side" id="side">
 	<section id="gallery"></section>
-	<canvas id="canvas"></canvas>
+	<button type="button" id="gallery_more" hidden>Load more...</button>
 </section>
 
 </section>

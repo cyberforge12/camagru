@@ -2,6 +2,7 @@
 session_start();
 require_once('constants.php');
 require_once ('config/database.php');
+require_once ('Paginator.class.php');
 
 function create_img($img, $overlay) {
     $base_img = imagecreatefromstring($img);
@@ -14,9 +15,20 @@ function create_img($img, $overlay) {
     return ($base_img);
 }
 
+function get_session_user (PDO $dbh) {
+    $request = 'SELECT session_user FROM
+        (SELECT *, max(date) FROM sessions GROUP BY session_id)
+        WHERE session_id = ?';
+    $sth = $dbh->prepare($request);
+    $sth->bindValue(1, session_id(), PDO::PARAM_STR);
+    $sth->execute();
+    $ret = $sth->fetchAll();
+    return $ret;
+}
+
 function process_image($arr, PDO $dbh) {
-    $overlay = ROOT_PATH . '/img/' . $arr->img_name . '.png';
-    $merged = create_img(base64_decode($arr->content), $overlay);
+    $overlay = ROOT_PATH . 'img/' . $arr->img_name . '.png';
+    $merged = create_img(base64_decode($arr->data), $overlay);
     ob_start();
     imagepng($merged);
     $image_data = ob_get_contents();
@@ -25,10 +37,12 @@ function process_image($arr, PDO $dbh) {
     echo json_encode(['status' => 'OK']);
     $query = 'INSERT INTO photos VALUES (current_timestamp, ?, ?)';
     $sth = $dbh->prepare($query);
-    $dbh->query("");
-    $sth->bindValue(1, $arr->content, PDO::PARAM_STR);
-    $sth->bindValue(2, session_id(), PDO::PARAM_STR);
-    $sth->execute();
+    $sth->bindValue(1, base64_encode($image_data), PDO::PARAM_STR);
+    $user = get_session_user($dbh)[0][0];
+    $sth->bindValue(2, (empty($user) ? session_id() : $user),
+        PDO::PARAM_STR);
+    if ($sth->execute())
+        return ['status' => 'OK', 'message' => 'Message processed'];
     imagedestroy($merged);
 }
 
@@ -76,7 +90,7 @@ function login ($arr, $dbh) {
         return ['status' => 'ERROR', 'message' => 'Database error'];
 }
 
-function logout ($arr, $dbh) {
+function logout ($dbh) {
     update_session(null, $dbh);
     return ['status' => 'OK', 'message' => 'Logged out'];
 }
@@ -110,7 +124,6 @@ function send_confirmation(string $email, PDO $dbh) {
 }
 
 function register ($arr, $dbh) {
-    $ret = [];
     $check = check_user($arr->login, $dbh);
     header('Content-Type: application/json');
     if ($check === 1)
@@ -133,17 +146,6 @@ function register ($arr, $dbh) {
         else
             return ['status' => 'ERROR', 'message' => 'Database error'];
     }
-}
-
-function get_session_user (PDO $dbh) {
-    $request = 'SELECT session_user FROM
-        (SELECT *, max(date) FROM sessions GROUP BY session_id)
-        WHERE session_id = ?';
-    $sth = $dbh->prepare($request);
-    $sth->bindValue(1, session_id(), PDO::PARAM_STR);
-    $sth->execute();
-    $ret = $sth->fetchAll();
-    return $ret;
 }
 
 function resend_confirmation(PDO $dbh) {
@@ -171,7 +173,7 @@ function resend_confirmation(PDO $dbh) {
         return ['status' => 'ERROR', 'message' => 'No session login'];
 }
 
-function get_profile($arr, PDO $dbh) {
+function get_profile(PDO $dbh) {
     $user = get_session_user($dbh)[0][0];
     if (!empty($user))
     {
@@ -190,6 +192,25 @@ function get_profile($arr, PDO $dbh) {
     }
     else
         return ['status' => 'ERROR', 'message' => 'No session login'];
+}
+
+function load_gallery(PDO $dbh) {
+    $request = 'SELECT rowid, date, photo, photo_owner FROM photos';
+    $sth = $dbh->prepare($request);
+    $sth->execute();
+    return $sth;
+}
+
+function get_gallery($arr, PDO $dbh) {
+//    load_gallery($dbh);
+//    $result = $sth->fetch();
+//
+    $limit      = 10;
+    $page       = ( isset ( $arr->page ) ) ? $arr->page : 1;
+    $query      = "SELECT rowid, date, photo, photo_owner FROM photos ORDER BY date DESC";
+    $Paginator  = new Paginator( $dbh, $query );
+    $results    = $Paginator->getData( $limit, $page );
+    return $results;
 }
 
 function check_session(PDO $dbh) {
@@ -214,13 +235,15 @@ if (isset($dbh))
     elseif ($arr->action === 'login')
         $ret = login($arr, $dbh);
     elseif ($arr->action === 'logout')
-        $ret = logout($arr, $dbh);
+        $ret = logout($dbh);
     elseif ($arr->action === 'register')
         $ret = register($arr, $dbh);
     elseif ($arr->action === 'get_profile')
-        $ret = get_profile($arr, $dbh);
+        $ret = get_profile($dbh);
     elseif ($arr->action === 'resend')
         $ret = resend_confirmation($dbh);
+    elseif ($arr->action === 'get_gallery')
+        $ret = get_gallery($arr, $dbh);
 }
 else
     $ret = ['status' => 'ERROR', 'message' => 'Database error'];
