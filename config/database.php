@@ -34,11 +34,11 @@ try {
         id integer primary key,
         text,
         comment_user REFERENCES users(login),
-        comment_photo REFERENCES photos(date))');
+        comment_photo REFERENCES photos(ROWID))');
     $dbh->exec('create table if not exists likes(
         id integer primary key,
         like_user REFERENCES users(login),
-        like_photo REFERENCES photos(date))');
+        like_photo REFERENCES photos(ROWID))');
     $dbh->exec('create table if not exists sessions(
         session_id VARCHAR(32),
         date,
