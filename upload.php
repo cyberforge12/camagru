@@ -22,8 +22,9 @@ function get_session_user (PDO $dbh) {
     $sth = $dbh->prepare($request);
     $sth->bindValue(1, session_id(), PDO::PARAM_STR);
     $sth->execute();
-    $ret = $sth->fetchAll();
-    return $ret;
+    if (($ret = $sth->fetch()))
+        return $ret[0];
+    return null;
 }
 
 function process_image($arr, PDO $dbh) {
@@ -38,11 +39,11 @@ function process_image($arr, PDO $dbh) {
     $query = 'INSERT INTO photos VALUES (current_timestamp, ?, ?)';
     $sth = $dbh->prepare($query);
     $sth->bindValue(1, base64_encode($image_data), PDO::PARAM_STR);
-    $user = get_session_user($dbh)[0][0];
+    $user = get_session_user($dbh);
     $sth->bindValue(2, (empty($user) ? session_id() : $user),
         PDO::PARAM_STR);
     if ($sth->execute())
-        return ['status' => 'OK', 'message' => 'Message processed'];
+        return ['status' => 'OK', 'message' => 'Image added to gallery'];
     imagedestroy($merged);
 }
 
@@ -149,7 +150,7 @@ function register ($arr, $dbh) {
 }
 
 function resend_confirmation(PDO $dbh) {
-    $user = get_session_user($dbh)[0][0];
+    $user = get_session_user($dbh);
     if (!empty($user))
     {
         $sth = $dbh->prepare('SELECT email FROM users WHERE login = ?');
@@ -174,7 +175,7 @@ function resend_confirmation(PDO $dbh) {
 }
 
 function get_profile(PDO $dbh) {
-    $user = get_session_user($dbh)[0][0];
+    $user = get_session_user($dbh);
     if (!empty($user))
     {
         $sth = $dbh->prepare('SELECT login, email,
@@ -205,17 +206,18 @@ function get_gallery($arr, PDO $dbh) {
 //    load_gallery($dbh);
 //    $result = $sth->fetch();
 //
-    $limit      = 10;
-    $page       = ( isset ( $arr->page ) ) ? $arr->page : 1;
-    $query      = "SELECT rowid, date, photo, photo_owner FROM photos ORDER BY date DESC";
-    $Paginator  = new Paginator( $dbh, $query );
-    $results    = $Paginator->getData( $limit, $page );
+    $user = get_session_user($dbh);
+    $limit = 10;
+    $page = ( isset ( $arr->page ) ) ? $arr->page : 1;
+    $query = "SELECT rowid, date, photo, photo_owner FROM photos ORDER BY date DESC";
+    $Paginator = new Paginator( $dbh, $query, $user );
+    $results = $Paginator->getData( $limit, $page );
     return $results;
 }
 
 function check_session(PDO $dbh) {
     $user = get_session_user($dbh);
-    if (!empty($user[0][0]))
+    if (!empty($user))
         return ['status' => 'OK', 'message' => 'Session login OK'];
     else
         return ['status' => 'ERROR', 'message' => 'No session login'];

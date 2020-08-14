@@ -64,6 +64,7 @@ include_once (ROOT_PATH . 'login.php');
 </section>
 <section class="content">
 <main class="main" id="main">
+	<div id="pics_header">Select an overlay image:</div>
 	<div id="pics">
 		<img id="discount"  src="img/discount.png" onclick="select_img(this)"
 			 alt="discount">
@@ -76,22 +77,22 @@ include_once (ROOT_PATH . 'login.php');
 		<img id="none"  src="img/none.png" onclick="select_img(this)" alt="clear
 		 img">
 	</div>
-	<div id="videoContainer">
+	<div id="videoContainer" hidden>
 		<video id="cam" src="" autoplay poster="img/none.png"></video>
 		<button id="snapshot" onclick="snapshot()"
 				disabled hidden>SNAPSHOT!</button>
-		<form id="upload" enctype="multipart/form-data" action="" hidden>
-			<input type="hidden" name="cam" value="">
-			<input type="hidden" id="img_name" name="img_name" value="">
-			<input type="hidden" name="MAX_FILE_SIZE" value="3000000" />
-			<label for="form_file">Choose photo to upload: </label>
-			<input id="form_file" name="form_file" placeholder="Choose
-			photo to upload..." type="file">
-			<button id="upload_button" type="button"
-					onclick="upload_fetch()" disabled
-					title="Select as overlay image above">Submit</button>
-		</form>
 	</div>
+	<form id="upload" enctype="multipart/form-data" action="">
+		<input type="hidden" name="cam" value="">
+		<input type="hidden" id="img_name" name="img_name" value="">
+		<input type="hidden" name="MAX_FILE_SIZE" value="3000000" />
+		<label for="form_file">Cam is not available. Upload a photo: </label>
+		<input id="form_file" name="form_file" placeholder="Choose
+			photo to upload..." type="file">
+		<button id="upload_button" type="button"
+				onclick="upload_fetch()" disabled
+				title="Select as overlay image above">Submit</button>
+	</form>
 </main>
 <section class="side" id="side">
 	<section id="gallery"></section>
@@ -99,7 +100,7 @@ include_once (ROOT_PATH . 'login.php');
 </section>
 
 </section>
-<footer class="footer">&copy;mmanhack @ school 21</footer>
+<footer class="footer">&copy;Чистяков П. В., 2020</footer>
 <script type="text/javascript" src="js/script.js"></script>
 </body>
 </html>

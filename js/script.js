@@ -80,6 +80,7 @@ function login() {
     obj.passw = passw;
     sendJSON(obj, toggle_profile_icons);
     check_session();
+    load_gallery();
     console.log('Login button pressed');
 }
 
@@ -229,12 +230,6 @@ function snapshot() {
     }
 }
 
-function parse_gallery(e) {
-    e.forEach((elem) => {
-       alert (elem);
-    });
-}
-
 function sendJSON(obj, callback) {
     if (typeof obj !== "object")
         console.log('Can\'t send non-object');
@@ -250,6 +245,81 @@ function sendJSON(obj, callback) {
     }
 }
 
+function toggle_like (event) {
+    console.log('Like button ' + event.currentTarget.id + ' pressed');
+}
+
+function add_like_button (holder, id, item) {
+    let like_button = document.createElement('img');
+    holder.appendChild(like_button);
+    like_button.className = 'gallery_item_buttons';
+    like_button.id = 'like_' + id;
+    like_button.src = 'img/likes.png';
+    like_button.alt = 'Like button';
+    like_button.onclick = toggle_like;
+    let like_button_label = document.createElement('label');
+    like_button_label.htmlFor = 'like_' + id;
+    like_button_label.innerHTML = item.likes;
+    holder.appendChild(like_button_label);
+}
+
+function show_comments (event) {
+    console.log('Comments button ' + event.currentTarget.id + ' pressed');
+}
+
+function add_comments_button (holder, id, item) {
+    let comment_button = document.createElement('img');
+    holder.appendChild(comment_button);
+    comment_button.className = 'gallery_item_buttons';
+    comment_button.id = 'comment_' + id;
+    comment_button.src = 'img/comments.png';
+    comment_button.alt = 'Comments button';
+    comment_button.onclick = show_comments;
+    let comment_button_label = document.createElement('label');
+    comment_button_label.htmlFor = 'comment_' + id;
+    comment_button_label.innerHTML = item.comments;
+    holder.appendChild(comment_button_label);
+}
+
+function delete_gallery_item (event) {
+    console.log('Delete button ' + event.currentTarget.id + ' pressed');
+}
+
+function add_actions(holder, item) {
+    let id = item.rowid;
+    add_like_button(holder, id, item);
+    add_comments_button(holder, id, item);
+    if (item.delete === 1)
+    {
+        let delete_button = document.createElement('img');
+        holder.appendChild(delete_button);
+        delete_button.id = 'delete_' + id;
+        delete_button.src = 'img/delete.png';
+        delete_button.alt = 'Delete button';
+        delete_button.className = 'gallery_item_buttons';
+        delete_button.onclick = delete_gallery_item;
+    }
+}
+
+function add_info(holder, item) {
+
+    let div1 = document.createElement('div');
+    div1.innerHTML = 'Created by';
+    holder.appendChild(div1);
+
+    let div2 = document.createElement('div');
+    div2.innerHTML = item.photo_owner;
+    holder.appendChild(div2);
+
+    let div3 = document.createElement('div');
+    div3.innerHTML = ' at ';
+    holder.appendChild(div3);
+
+    let div4 = document.createElement('div');
+    div4.innerHTML = item.date;
+    holder.appendChild(div4);
+}
+
 function show_gallery(xhttp) {
     let response;
     if (xhttp.readyState === 4 && xhttp.status === 200) {
@@ -257,11 +327,21 @@ function show_gallery(xhttp) {
         if (response.rows > 0)
         {
             response.data.forEach(function (item, i, arr) {
-                let gallery_item = document.createElement('img');
+                let gallery_item = document.createElement('section');
                 document.getElementById('gallery').appendChild(gallery_item);
                 gallery_item.id = item.rowid;
                 gallery_item.className = 'gallery_item';
-                gallery_item.src = 'data:image/png;base64, ' + item.photo;
+                let gallery_item_img = document.createElement('img');
+                gallery_item.appendChild(gallery_item_img);
+                gallery_item_img.src = 'data:image/png;base64, ' + item.photo;
+                let gallery_item_info = document.createElement('section');
+                gallery_item.appendChild(gallery_item_info);
+                gallery_item_info.className = 'gallery_item_info';
+                add_info(gallery_item_info, item);
+                let gallery_item_actions = document.createElement('section');
+                gallery_item.appendChild(gallery_item_actions);
+                gallery_item_actions.className = 'gallery_item_actions_holder';
+                add_actions(gallery_item_actions, item);
             })
             if (response.rows == 10)
                 document.getElementById('gallery_more').removeAttribute('hidden');
@@ -312,9 +392,6 @@ function upload_fetch() {
     };
 }
 
-function like($item) {
-}
-
 function check_session () {
     let obj = {};
     obj.action = 'check_session';
@@ -330,7 +407,8 @@ navigator.mediaDevices.getUserMedia({video: true})
         {
             video.srcObject = stream;
             localMediaStream = stream;
-            document.getElementById('snapshot').hidden = false;
+            document.getElementById('videoContainer').style.display = 'flex';
+            document.getElementById('snapshot').removeAttribute('hidden');
             track = localMediaStream.getTracks()[0];
             track_settings = track.getSettings();
             video_ratio = track_settings.width / track_settings.height;
@@ -338,10 +416,7 @@ navigator.mediaDevices.getUserMedia({video: true})
     })
     .catch(function (reason) {
         if (reason)
-        {
-            video.style.backgroundColor = 'red';
-            document.getElementById('upload').hidden = false;
-        }
+            document.getElementById('upload').style.display = 'flex';
     });
 
 var test = document.getElementById('test');
