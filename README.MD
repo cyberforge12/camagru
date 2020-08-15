@@ -2,6 +2,8 @@
 
 A web application allowing you to make basic photo and video editing using your webcam and some predefined images. You can review all images posted by all users, comment and like them, and receive e-mail notifications (you need to set up your own SMTP server) on updates to your photos.
 
+Full project description: https://github.com/cyberforge12/camagru/blob/dev/info/camagru.en.pdf
+
 ##### Stack
 - PHP
 - Javascript
