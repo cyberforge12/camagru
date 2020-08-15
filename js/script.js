@@ -246,6 +246,14 @@ function sendJSON(obj, callback) {
 }
 
 function toggle_like (event) {
+    if (event.currentTarget.value === 'pressed') {
+        event.currentTarget.style.filter =  'invert(0%)';
+        event.currentTarget.value = '';
+    }
+    else {
+        event.currentTarget.style.filter =  'invert(100%)';
+        event.currentTarget.value = 'pressed';
+    }
     console.log('Like button ' + event.currentTarget.id + ' pressed');
 }
 
@@ -282,6 +290,9 @@ function add_comments_button (holder, id, item) {
 }
 
 function delete_gallery_item (event) {
+    obj = {};
+    obj.action = 'delete';
+    obj.id = event.currentTarget.parentElement.id;
     console.log('Delete button ' + event.currentTarget.id + ' pressed');
 }
 

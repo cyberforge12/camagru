@@ -71,11 +71,12 @@ class Paginator
                 $this->_limit . ", $this->_limit";
         $sth = $this->_dbh->query($query);
 
+        $results = [];
         while ( $row = $sth->fetch(PDO::FETCH_ASSOC) )
         {
-            $row += ['likes' => $this->countLikes($row['rowid'])];
-            $row += ['user_like' => $this->userLikes($row['rowid'])];
-            $row += ['comments' => $this->countComments($row['rowid'])];
+            $row += ['likes' => $this->countLikes($row['id'])];
+            $row += ['user_like' => $this->userLikes($row['id'])];
+            $row += ['comments' => $this->countComments($row['id'])];
             $results[] = $row;
         }
 

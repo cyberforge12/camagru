@@ -22,23 +22,22 @@ try {
         password binary(64),
         is_confirmed integer,
         notify integer)');
-    $dbh->exec('create table if not exists uploads(
-        date timestamp DEAFULT CURRENT_TIMESTAMP,
-        photo,
-        photo_owner, foreign key (photo_owner) REFERENCES users(login))');
     $dbh->exec('create table if not exists photos(
+        id integer primary key autoincrement, 
         date timestamp DEAFULT CURRENT_TIMESTAMP,
         photo,
-        photo_owner, foreign key (photo_owner) REFERENCES users(login))');
+        photo_owner,
+        is_deleted,
+        foreign key (photo_owner) REFERENCES users(login))');
     $dbh->exec('create table if not exists comments(
         id integer primary key,
         text,
         comment_user REFERENCES users(login),
-        comment_photo REFERENCES photos(ROWID))');
+        comment_photo REFERENCES photos(id))');
     $dbh->exec('create table if not exists likes(
         id integer primary key,
         like_user REFERENCES users(login),
-        like_photo REFERENCES photos(ROWID))');
+        like_photo REFERENCES photos(id))');
     $dbh->exec('create table if not exists sessions(
         session_id VARCHAR(32),
         date,
