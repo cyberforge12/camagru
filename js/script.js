@@ -6,7 +6,7 @@ var track = null;
 var track_settings = null;
 var video_ratio = null;
 var snapshot_button = document.getElementById('snapshot');
-var pic_submit_button = document.getElementById('upload_button');
+var page = 1;
 
 function test_over(item) {
     console.log('over');
@@ -221,16 +221,32 @@ function sendJSON(obj, callback) {
     }
 }
 
+function find_label(el) {
+    var idVal = el.id;
+    labels = document.getElementsByTagName('label');
+    for( var i = 0; i < labels.length; i++ ) {
+        if (labels[i].htmlFor == idVal)
+            return labels[i];
+    }
+}
+
 function toggle_like (event) {
-    if (event.currentTarget.value === 'pressed') {
-        event.currentTarget.style.filter =  'invert(0%)';
-        event.currentTarget.value = '';
+    let elem = event.currentTarget;
+    label = find_label(elem);
+    if (elem.value === 'pressed') {
+        elem.style.filter =  'invert(0%)';
+        elem.value = '';
+        sendJSON({'action': 'delete_like', 'id': elem.id}, e => {});
+        if (label.innerHTML > 0)
+            label.innerHTML -= 1;
     }
     else {
-        event.currentTarget.style.filter =  'invert(100%)';
-        event.currentTarget.value = 'pressed';
+        elem.style.filter =  'invert(100%)';
+        elem.value = 'pressed';
+        sendJSON({'action': 'add_like', 'id': elem.id}, e => {});
+        label.innerHTML = Number(label.innerHTML) + 1;
     }
-    console.log('Like button ' + event.currentTarget.id + ' pressed');
+    console.log('Like button ' + elem.id + ' pressed');
 }
 
 function add_like_button (holder, id, item) {
@@ -247,18 +263,22 @@ function add_like_button (holder, id, item) {
     holder.appendChild(like_button_label);
 }
 
-function show_comments (event) {
+function toggle_comments (event) {
+    let id = (event.currentTarget.id.split('_'))[1];
+    document.getElementById('comments_holder_' + id).style.display = 'flex';
+    let comments_section = document.createElement('section');
+    event.currentTarget.parentNode.parentNode.appendChild(comments_section);
     console.log('Comments button ' + event.currentTarget.id + ' pressed');
 }
 
-function add_comments_button (holder, id, item) {
+function add_comments (holder, id, item) {
     let comment_button = document.createElement('img');
     holder.appendChild(comment_button);
     comment_button.className = 'gallery_item_buttons';
     comment_button.id = 'comment_' + id;
     comment_button.src = 'img/comments.png';
     comment_button.alt = 'Comments button';
-    comment_button.onclick = show_comments;
+    comment_button.onclick = toggle_comments;
     let comment_button_label = document.createElement('label');
     comment_button_label.htmlFor = 'comment_' + id;
     comment_button_label.innerHTML = item.comments;
@@ -273,9 +293,9 @@ function delete_gallery_item (event) {
 }
 
 function add_actions(holder, item) {
-    let id = item.rowid;
+    let id = item.id;
     add_like_button(holder, id, item);
-    add_comments_button(holder, id, item);
+    add_comments(holder, id, item);
     if (item.delete === 1)
     {
         let delete_button = document.createElement('img');
@@ -295,7 +315,7 @@ function add_info(holder, item) {
     holder.appendChild(div1);
 
     let div2 = document.createElement('div');
-    div2.innerHTML = item.photo_owner;
+    div2.innerHTML = item.user;
     holder.appendChild(div2);
 
     let div3 = document.createElement('div');
@@ -307,8 +327,50 @@ function add_info(holder, item) {
     holder.appendChild(div4);
 }
 
+function add_comment_callback (xhhtp) {
+    if (xhhtp.readyState === 4 && xhhtp.status === 200)
+    {
+        response = JSON.parse(xhhtp.response);
+        button = document.getElementById('comment_button_' + response['id']);
+        if (response['status'] === 'OK')
+        {
+            comment = button.prepend('div');
+            comment.innerHTML = response['comment'];
+            comment_info = button.prepend('section');
+            add_info(comment_info, response);
+        }
+        else
+        {
+            comment = button.prepend('div');
+            comment.innerHTML = response['message'];
+            setTimeout(() => {comment.remove()},4 * 1000);
+        }
+    }
+}
+
+function show_comment_form (event) {
+    let id = (event.currentTarget.id.split('_'))[2];
+    button = document.getElementById('comment_button_' + id);
+    button.style.display = 'none';
+    comment_form = document.createElement('input');
+    comment_form.className = 'comment_form';
+    button.parentNode.appendChild(comment_form);
+
+    send_comment = document.createElement('button');
+    button.parentNode.appendChild(send_comment);
+    send_comment.className = 'send_comment';
+    send_comment.innerHTML = 'Send comment';
+    send_comment.onclick = function () {
+        sendJSON({'action': 'add_comment', 'id': id,
+            'data': comment_form.value}, add_comment_callback);
+    }
+    console.log('Send comment button ' + id + ' pressed');
+}
+
 function show_gallery(xhttp) {
     let response;
+    if (loading = document.getElementById('div_loading'))
+        loading.remove();
     if (xhttp.readyState === 4 && xhttp.status === 200) {
         response = JSON.parse(xhttp.response);
         if (response.rows > 0)
@@ -316,7 +378,7 @@ function show_gallery(xhttp) {
             response.data.forEach(function (item, i, arr) {
                 let gallery_item = document.createElement('section');
                 document.getElementById('gallery').appendChild(gallery_item);
-                gallery_item.id = item.rowid;
+                gallery_item.id = item.id;
                 gallery_item.className = 'gallery_item';
                 let gallery_item_img = document.createElement('img');
                 gallery_item.appendChild(gallery_item_img);
@@ -329,16 +391,49 @@ function show_gallery(xhttp) {
                 gallery_item.appendChild(gallery_item_actions);
                 gallery_item_actions.className = 'gallery_item_actions_holder';
                 add_actions(gallery_item_actions, item);
+                let comments_section = document.createElement('section');
+                gallery_item.appendChild(comments_section);
+                comments_section.className = 'comments_holder';
+                comments_section.style.display = 'none';
+                comments_section.id = 'comments_holder_' + item.id;
+                let comment_button = document.createElement('button');
+                comments_section.appendChild(comment_button);
+                comment_button.className = 'comment_button';
+                comment_button.id = 'comment_button_' + item.id;
+                comment_button.onclick = show_comment_form;
+                comment_button.innerHTML = 'Add comment';
+
             })
-            if (response.rows == 10)
-                document.getElementById('gallery_more').removeAttribute('hidden');
-            else
-                document.getElementById('gallery_more').setAttribute('hidden');
+            if (response.rows === 10)
+                add_load_more_button();
         }
     }
 }
 
+function add_load_more_button () {
+    let load_more_button = document.createElement('button');
+    document.getElementById('gallery').appendChild(load_more_button);
+    load_more_button.id = 'gallery_more';
+    load_more_button.innerHTML = 'Load more...';
+    load_more_button.addEventListener('click', load_more);
+    page++;
+}
+
+function load_more () {
+    document.getElementById('gallery_more').remove();
+    let loading = document.createElement('div');
+    document.getElementById('gallery').appendChild(loading);
+    loading.id = 'div_loading';
+    loading.innerHTML = 'Loading...';
+    loading.style.textAlign = 'center';
+    page++;
+    sendJSON({'action': 'get_gallery', 'page' : page}, show_gallery);
+    console.log('load more...');
+
+}
+
 function load_gallery() {
+    page = 1;
     let new_gal = document.getElementById('gallery').cloneNode(false);
     document.getElementById('gallery').remove();
     document.getElementById('side').prepend(new_gal);

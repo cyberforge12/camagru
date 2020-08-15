@@ -269,10 +269,6 @@ function check_session(PDO $dbh) {
         return ['status' => 'ERROR', 'message' => 'No session login'];
 }
 
-function like ($arr, PDO $dbh) {
-
-}
-
 function comment ($arr, PDO $dbh) {
 
 }
@@ -281,7 +277,61 @@ function delete_photo ($arr, PDO $dbh) {
     $query = 'UPDATE photos SET is_deleted = 1 WHERE id = ?';
     $sth = $dbh->prepare($query);
     $sth->bindValue(1, $arr['id']);
+}
 
+function delete_like ($arr, PDO $dbh) {
+    $user = get_session_user($dbh);
+    if ($user)
+    {
+        $request = 'INSERT INTO likes (user, photo, like)
+            VALUES (?, ?, 0)';
+        $sth = $dbh->prepare($request);
+        $sth->bindValue(1, $user);
+        $id = explode('_', $arr->id);
+        if ($id[1])
+        {
+            $sth->bindValue(2, $id[1]);
+            if ($sth->execute())
+                return ['status' => 'OK', 'message' => 'Like deleted'];
+        }
+    }
+    return ['status' => 'ERROR', 'message' => 'User not logged in'];
+}
+
+function add_like ($arr, PDO $dbh) {
+    $user = get_session_user($dbh);
+    if ($user)
+    {
+        $request = 'INSERT INTO likes (user, photo, like)
+            VALUES (?, ?, 1)';
+        $sth = $dbh->prepare($request);
+        $sth->bindValue(1, $user);
+        $id = explode('_', $arr->id);
+        if ($id[1])
+        {
+            $sth->bindValue(2, $id[1]);
+            if ($sth->execute())
+                return ['status' => 'OK', 'message' => 'Like recorded'];
+        }
+    }
+    return ['status' => 'ERROR', 'message' => 'User not logged in'];
+}
+
+function add_comment ($arr, PDO $dbh) {
+    $user = get_session_user($dbh);
+    if ($user)
+    {
+        $request = 'INSERT INTO comments (text, user, photo)
+            VALUES (?, ?, ?)';
+        $sth = $dbh->prepare($request);
+        $sth->bindValue(1, $arr->data);
+        $sth->bindValue(2, $user);
+        $sth->bindValue(3, $arr->id);
+        if ($sth->execute())
+            return ['status' => 'OK', 'message' => 'Comment recorded',
+                'id' => $arr->id];
+    }
+    return ['status' => 'ERROR', 'message' => 'Comment not recorded', 'id' => $arr->id];
 }
 
 $json = file_get_contents("php://input");
@@ -307,13 +357,16 @@ if (isset($dbh))
         $ret = resend_confirmation($dbh);
     elseif ($arr->action === 'get_gallery')
         $ret = get_gallery($arr, $dbh);
-    elseif ($arr->action === 'like')
-        $ret = like($arr, $dbh);
     elseif ($arr->action === 'comment')
         $ret = comment($arr, $dbh);
     elseif ($arr->action === 'delete')
         $ret = delete_photo($arr, $dbh);
-
+    elseif ($arr->action === 'add_like')
+        $ret = add_like($arr, $dbh);
+    elseif ($arr->action === 'delete_like')
+        $ret = delete_like($arr, $dbh);
+    elseif ($arr->action === 'add_comment')
+        $ret = add_comment($arr, $dbh);
 }
 else
     $ret = ['status' => 'ERROR', 'message' => 'Database error'];

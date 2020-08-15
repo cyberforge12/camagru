@@ -5,8 +5,9 @@ body {
     justify-content: center;
     min-height: 93vh;
     max-height: 93vh;
-    width: 100%;
+    width: 99%;
     font-family: Arial, sans-serif;
+    font-size: 14px;
     overflow: auto;
 }
 
@@ -15,6 +16,10 @@ body {
     background-color: #3E3E3C;
     /*border: 1px solid green;*/
     color: #E8E9C9;
+}
+
+button {
+    border-radius: 5px;
 }
 
 .header {
@@ -29,7 +34,7 @@ body {
 }
 
 #header_text {
-    font-size: x-large;
+    font-size: 40px;
     margin-left: 25px;
     margin-right: auto;
     justify-self: start;
@@ -115,7 +120,6 @@ body {
     flex-shrink: 1;
     flex-direction: row;
     font-style: oblique;
-    font-size: 36px;
 }
 
 #main {
@@ -183,6 +187,7 @@ body {
     height: 100%;
     display: flex;
     flex-direction: column;
+    justify-items: center;
     /*flex: 0 1 auto;*/
     /*flex-direction: column;*/
 }
@@ -219,19 +224,27 @@ body {
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
+    align-items: center;
     height: 10%;
 }
 
 .gallery_item_actions_holder > * {
+    align-self: center;
     margin-right: 5px;
     height: 100%;
-    font-size: small;
-    flex-shrink: 1;
+}
+
+.comments_holder {
+    display: none;
+    flex-direction: column;
+}
+
+.comment_form {
+    height: 5vh;
+    border-color: #E8E9C9;
 }
 
 .footer {
-    height: 16px;
-    font-family: Arial, sans-serif;
     font-size: small;
     text-align: right;
 }
