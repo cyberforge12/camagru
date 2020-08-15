@@ -26,18 +26,19 @@ try {
         id integer primary key autoincrement, 
         date timestamp DEAFULT CURRENT_TIMESTAMP,
         photo,
-        photo_owner,
+        user,
         is_deleted,
-        foreign key (photo_owner) REFERENCES users(login))');
+        foreign key (user) REFERENCES users(login))');
     $dbh->exec('create table if not exists comments(
         id integer primary key,
         text,
-        comment_user REFERENCES users(login),
-        comment_photo REFERENCES photos(id))');
+        user REFERENCES users(login),
+        photo REFERENCES photos(id))');
     $dbh->exec('create table if not exists likes(
         id integer primary key,
-        like_user REFERENCES users(login),
-        like_photo REFERENCES photos(id))');
+        user REFERENCES users(login),
+        photo REFERENCES photos(id),
+        like)');
     $dbh->exec('create table if not exists sessions(
         session_id VARCHAR(32),
         date,

@@ -79,7 +79,7 @@ function process_image($arr, PDO $dbh) {
     ob_end_clean();
     header('Content-Type: application/json');
     echo json_encode(['status' => 'OK']);
-    $query = 'INSERT INTO photos (date, photo, photo_owner, is_deleted)
+    $query = 'INSERT INTO photos (date, photo, user, is_deleted)
         VALUES (current_timestamp, ?, ?, 0)';
     $sth = $dbh->prepare($query);
     $sth->bindValue(1, base64_encode($image_data), PDO::PARAM_STR);
@@ -240,7 +240,7 @@ function get_profile(PDO $dbh) {
 }
 
 function load_gallery(PDO $dbh) {
-    $request = 'SELECT id, date, photo, photo_owner FROM photos';
+    $request = 'SELECT id, date, photo, user FROM photos';
     $sth = $dbh->prepare($request);
     $sth->execute();
     return $sth;
@@ -253,7 +253,7 @@ function get_gallery($arr, PDO $dbh) {
     $user = get_session_user($dbh);
     $limit = 10;
     $page = ( isset ( $arr->page ) ) ? $arr->page : 1;
-    $query = "SELECT id, date, photo, photo_owner FROM photos
+    $query = "SELECT id, date, photo, user FROM photos
             WHERE is_deleted = 0
             ORDER BY date DESC";
     $Paginator = new Paginator( $dbh, $query, $user );

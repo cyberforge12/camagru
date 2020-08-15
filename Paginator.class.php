@@ -17,7 +17,7 @@ class Paginator
     }
 
     private function countComments($rowid) {
-        $query = 'SELECT count(comment_user) FROM comments WHERE comment_photo = ?';
+        $query = 'SELECT count(user) FROM comments WHERE photo = ?';
         $sth = $this->_dbh->query($query);
         $sth->bindValue(1, $rowid, PDO::PARAM_INT);
         if ($sth->execute())
@@ -29,25 +29,25 @@ class Paginator
         return 0;
     }
 
-    private function countLikes($rowid) {
-        $query = 'SELECT count(like_user) FROM likes WHERE like_photo = ?';
+    private function countLikes($id) {
+        $query = 'SELECT sum(like) FROM likes WHERE photo = ?';
         $sth = $this->_dbh->query($query);
-        $sth->bindValue(1, $rowid, PDO::PARAM_INT);
+        $sth->bindValue(1, $id, PDO::PARAM_INT);
         if ($sth->execute())
         {
             $ret = $sth->fetch();
-            if ($ret)
+            if (!empty($ret[0]))
                 return $ret[0];
         }
         return 0;
     }
 
     private function userLikes($rowid) {
-        $query = 'SELECT like_user FROM likes
-            WHERE like_user = (
-                SELECT ROWID FROM users
+        $query = 'SELECT user FROM likes
+            WHERE user = (
+                SELECT login FROM users
                 WHERE login = ?)
-              AND like_photo = ?';
+              AND photo = ?';
         $sth = $this->_dbh->query($query);
         $sth->bindValue(1, $this->_user, PDO::PARAM_STR);
         $sth->bindValue(2, $rowid, PDO::PARAM_INT);
