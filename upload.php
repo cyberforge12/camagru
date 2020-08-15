@@ -4,15 +4,59 @@ require_once('constants.php');
 require_once ('config/database.php');
 require_once ('Paginator.class.php');
 
-function create_img($img, $overlay) {
-    $base_img = imagecreatefromstring($img);
-    $overlay_img = imagecreatefrompng($overlay);
-    imagealphablending($overlay_img, true);
-    imagesavealpha($overlay_img, true);
-    imagecopymerge($base_img, $overlay_img, 0,0,
-        0,0,imagesx($base_img), imagesy($base_img),100);
-    imagedestroy($overlay_img);
-    return ($base_img);
+function resize_image($image, $w, $h, $crop=FALSE) {
+    $width = imagesx($image);
+    $height = imagesy($image);
+    $r = $width / $height;
+    if ($crop) {
+        if ($width > $height) {
+            $width = ceil($width-($width*abs($r-$w/$h)));
+        } else {
+            $height = ceil($height-($height*abs($r-$w/$h)));
+        }
+        $newwidth = $w;
+        $newheight = $h;
+    } else {
+        if ($w/$h > $r) {
+            $newwidth = $h*$r;
+            $newheight = $h;
+        } else {
+            $newheight = $w/$r;
+            $newwidth = $w;
+        }
+    }
+    $dst = imagecreatetruecolor($newwidth, $newheight);
+    imagealphablending( $dst, false );
+    imagesavealpha( $dst, true );
+    imagecopyresampled($dst, $image,
+        0, 0,
+        0, 0,
+        $newwidth, $newheight,
+        $width, $height);
+    return $dst;
+}
+
+function create_img($arr) {
+    $overlay = ROOT_PATH . 'img/' . $arr->img_name . '.png';
+    $dst_cam = imagecreatefromstring(base64_decode($arr->data));
+    $src_ovl = imagecreatefrompng($overlay);
+    $dst_sx = imagesx($dst_cam);
+    $dst_sy = imagesy($dst_cam);
+    if (in_array($arr->img_name, ['frame', 'stars']))
+        imagecopyresized($dst_cam, $src_ovl, 0, 0, 0, 0,
+        $dst_sx, $dst_sy, imagesx($src_ovl), imagesy($src_ovl));
+    elseif ($arr->img_name === 'think')
+        imagecopyresized($dst_cam, $src_ovl, $dst_sx * 0.75, 50,
+            0, 0, 150, 150, imagesx($src_ovl), imagesy($src_ovl));
+    elseif ($arr->img_name === 'discount')
+        imagecopyresized($dst_cam, $src_ovl, 0, $dst_sy - 150,
+            0, 0, 150, 150, imagesx($src_ovl), imagesy($src_ovl));
+    elseif ($arr->img_name === 'none')
+        imagecopyresized($dst_cam, $src_ovl, $dst_sx / 2 - 150, $dst_sy / 2 -
+            150, 0, 0, 300, 300,
+            imagesx($src_ovl), imagesy($src_ovl));
+    imagedestroy($src_ovl);
+    return ($dst_cam);
 }
 
 function get_session_user (PDO $dbh) {
@@ -28,15 +72,15 @@ function get_session_user (PDO $dbh) {
 }
 
 function process_image($arr, PDO $dbh) {
-    $overlay = ROOT_PATH . 'img/' . $arr->img_name . '.png';
-    $merged = create_img(base64_decode($arr->data), $overlay);
+    $merged = create_img($arr);
     ob_start();
     imagepng($merged);
     $image_data = ob_get_contents();
     ob_end_clean();
     header('Content-Type: application/json');
     echo json_encode(['status' => 'OK']);
-    $query = 'INSERT INTO photos VALUES (current_timestamp, ?, ?)';
+    $query = 'INSERT INTO photos (date, photo, photo_owner, is_deleted)
+        VALUES (current_timestamp, ?, ?, 0)';
     $sth = $dbh->prepare($query);
     $sth->bindValue(1, base64_encode($image_data), PDO::PARAM_STR);
     $user = get_session_user($dbh);
@@ -196,7 +240,7 @@ function get_profile(PDO $dbh) {
 }
 
 function load_gallery(PDO $dbh) {
-    $request = 'SELECT rowid, date, photo, photo_owner FROM photos';
+    $request = 'SELECT id, date, photo, photo_owner FROM photos';
     $sth = $dbh->prepare($request);
     $sth->execute();
     return $sth;
@@ -209,7 +253,9 @@ function get_gallery($arr, PDO $dbh) {
     $user = get_session_user($dbh);
     $limit = 10;
     $page = ( isset ( $arr->page ) ) ? $arr->page : 1;
-    $query = "SELECT rowid, date, photo, photo_owner FROM photos ORDER BY date DESC";
+    $query = "SELECT id, date, photo, photo_owner FROM photos
+            WHERE is_deleted = 0
+            ORDER BY date DESC";
     $Paginator = new Paginator( $dbh, $query, $user );
     $results = $Paginator->getData( $limit, $page );
     return $results;
@@ -221,6 +267,21 @@ function check_session(PDO $dbh) {
         return ['status' => 'OK', 'message' => 'Session login OK'];
     else
         return ['status' => 'ERROR', 'message' => 'No session login'];
+}
+
+function like ($arr, PDO $dbh) {
+
+}
+
+function comment ($arr, PDO $dbh) {
+
+}
+
+function delete_photo ($arr, PDO $dbh) {
+    $query = 'UPDATE photos SET is_deleted = 1 WHERE id = ?';
+    $sth = $dbh->prepare($query);
+    $sth->bindValue(1, $arr['id']);
+
 }
 
 $json = file_get_contents("php://input");
@@ -246,6 +307,13 @@ if (isset($dbh))
         $ret = resend_confirmation($dbh);
     elseif ($arr->action === 'get_gallery')
         $ret = get_gallery($arr, $dbh);
+    elseif ($arr->action === 'like')
+        $ret = like($arr, $dbh);
+    elseif ($arr->action === 'comment')
+        $ret = comment($arr, $dbh);
+    elseif ($arr->action === 'delete')
+        $ret = delete_photo($arr, $dbh);
+
 }
 else
     $ret = ['status' => 'ERROR', 'message' => 'Database error'];
