@@ -1,7 +1,6 @@
 <?php
 require_once('constants.php');
 include_once (ROOT_PATH . 'config/setup.php');
-include_once (ROOT_PATH . 'login.php');
 ?>
 <!DOCTYPE html>
 <html lang="en">
