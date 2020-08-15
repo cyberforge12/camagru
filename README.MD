@@ -18,6 +18,7 @@ Full project description: https://github.com/cyberforge12/camagru/blob/dev/info/
 Installation:
 1. Copy project folder to web server's Document Root
 2. Check access rights (create, modify) on project's folder
+3. Local database is setup automatically on first load (folder 'db/')
 
 ##### Functionality
 
