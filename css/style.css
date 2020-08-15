@@ -165,7 +165,6 @@ body {
 }
 
 #upload > * {
-    font-size: small;
 }
 
 /*#cam {*/
@@ -214,7 +213,6 @@ body {
     margin-right: 3px;
     font-size: small;
 }
-
 
 .gallery_item_actions_holder {
     width: 100%;

@@ -67,10 +67,6 @@ function toggle_profile_icons(xhhtp) {
     }
 }
 
-function hide_profile() {
-    console.log('Profile button will be shown');
-}
-
 function login() {
     let login = document.getElementById('login_input').value;
     let passw = document.getElementById('passw_input').value;
@@ -158,22 +154,6 @@ function logout() {
     console.log('OK - logout');
 }
 
-// var video = document.getElementById("cam");
-//
-// if (navigator.mediaDevices.getUserMedia) {
-//     navigator.mediaDevices.getUserMedia({video: true})
-//         .then(function (stream) {
-//             video.srcObject = stream;
-//         })
-//         .catch(function (error) {
-//             document.getElementById("cam").innerText = "Can't access webcam!";
-//         })
-// }
-
-function reduce_font() {
-    document.getElementById('content').style.fontSize
-}
-
 function select_img(item) {
     if (selected_img)
     {
@@ -195,39 +175,35 @@ function select_img(item) {
         selected_img = item;
     }
     if (selected_img)
-    {
         snapshot_button.removeAttribute('disabled');
-        pic_submit_button.removeAttribute('disabled');
-    }
     else
-    {
         snapshot_button.setAttribute('disabled', '');
-        pic_submit_button.setAttribute('disabled', '');
-    }
     console.log('Image added to cam!');
 }
 
-function clear_img() {
-    console.log('Image cleared');
-
-}
-
 function snapshot() {
-    let canvas = document.createElement('canvas');
-    let context = canvas.getContext('2d');
-    canvas.width = 640;
-    canvas.height = 480;
-    if (localMediaStream && context) {
+    let obj = {};
+    obj.action = 'image_upload';
+    obj.img_name = selected_img.id;
+    if (localMediaStream) {
+        let canvas = document.createElement('canvas');
+        let context = canvas.getContext('2d');
+        canvas.width = 640;
+        canvas.height = 480;
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        let obj = {};
-        obj.action = 'image_upload';
-        obj.img_name = selected_img.id;
         obj.data = canvas.toDataURL().split(',')[1];
-        sendJSON(obj, (e) => {
-            if (e.readyState === 4 && e.status === 200)
-                load_gallery();
-        });
     }
+    else {
+        let file = document.getElementById('form_file').files[0];
+        let reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = e => {
+            obj.data = e.target.result.split(',')[1];};
+    }
+    sendJSON(obj, (e) => {
+        if (e.readyState === 4 && e.status === 200)
+            load_gallery();
+    });
 }
 
 function sendJSON(obj, callback) {
@@ -366,42 +342,9 @@ function load_gallery() {
     let new_gal = document.getElementById('gallery').cloneNode(false);
     document.getElementById('gallery').remove();
     document.getElementById('side').prepend(new_gal);
-    sendJSON({'action': 'get_gallery'}, show_gallery);
+    sendJSON({'action': 'get_gallery', 'page' : page}, show_gallery);
 }
 
-
-function upload_snapshot() {
-    var file = document.getElementById('form_file');
-    var obj = {'action': 'image_upload', 'img_name':selected_img.src, 'data': file};
-    return sendJSON(obj, null);
-}
-
-function upload_fetch() {
-    let file = document.getElementById('form_file').files[0];
-    let reader = new FileReader();
-    reader.readAsDataURL(file);
-    let obj = {};
-    obj.img_name = selected_img.id;
-    obj.action = 'image_upload';
-    reader.onload = e => {
-        obj.data = e.target.result.split(',')[1];
-        let request = JSON.stringify(obj);
-        return fetch('upload.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json;charset=utf-8'
-            },
-            body: request,
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                document.getElementById('upload')
-                console.log(data['image']);
-                return data;
-            })
-            .catch((e) => e);
-    };
-}
 
 function check_session () {
     let obj = {};
@@ -419,7 +362,6 @@ navigator.mediaDevices.getUserMedia({video: true})
             video.srcObject = stream;
             localMediaStream = stream;
             document.getElementById('videoContainer').style.display = 'flex';
-            document.getElementById('snapshot').removeAttribute('hidden');
             track = localMediaStream.getTracks()[0];
             track_settings = track.getSettings();
             video_ratio = track_settings.width / track_settings.height;

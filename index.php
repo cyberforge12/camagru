@@ -79,8 +79,6 @@ include_once (ROOT_PATH . 'login.php');
 	</div>
 	<div id="videoContainer" hidden>
 		<video id="cam" src="" autoplay poster="img/none.png"></video>
-		<button id="snapshot" onclick="snapshot()"
-				disabled hidden>SNAPSHOT!</button>
 	</div>
 	<form id="upload" enctype="multipart/form-data" action="">
 		<input type="hidden" name="cam" value="">
@@ -89,14 +87,12 @@ include_once (ROOT_PATH . 'login.php');
 		<label for="form_file">Cam is not available. Upload a photo: </label>
 		<input id="form_file" name="form_file" placeholder="Choose
 			photo to upload..." type="file">
-		<button id="upload_button" type="button"
-				onclick="upload_fetch()" disabled
-				title="Select as overlay image above">Submit</button>
 	</form>
+	<button id="snapshot" onclick="snapshot()"
+			disabled title="Select as overlay image above">SEND</button>
 </main>
 <section class="side" id="side">
 	<section id="gallery"></section>
-	<button type="button" id="gallery_more" hidden>Load more...</button>
 </section>
 
 </section>
