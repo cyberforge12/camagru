@@ -17,12 +17,11 @@ include_once (ROOT_PATH . 'config/setup.php');
 <!--	- ONCLICK --><?//=print_r($_COOKIE)?><!--</div>-->
 <header class="header">
 	<div id="header_text">CAMAGRU</div>
-	<img src="img/login.svg" class="login_icon user" id="login_icon"
-		 onclick="login_form_toggle(this)" alt="Login" hidden>
-	<img src="img/profile.svg" class="profile_icon user" id="profile_icon"
-		 onclick="open_profile()" alt="Open profile" hidden>
-	<img src="img/logout.svg" class="logout_icon user" id="logout_icon"
-		 onclick="logout()" alt="Logout" hidden>
+	<button class="user" id="login_button" onclick="login_form_toggle(this)"
+			alt="Login"></button>
+	<button class="user" id="profile_button" onclick="open_profile()"
+			alt="Open profile"></button>
+	<button class="user" id="logout_button" onclick="logout()" alt="Logout"></button>
 </header>
 <form id="login_form" action="">
 	Log in

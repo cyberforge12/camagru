@@ -35,23 +35,23 @@ function login_form_toggle() {
 }
 
 function profile_icons_login() {
-    document.getElementById('login_icon').hidden = true;
-    document.getElementById('profile_icon').hidden = false;
-    document.getElementById('logout_icon').hidden = false;
-    document.getElementById('login_form').style.display = '';
+    document.getElementById('login_button').style.display = 'none';
+    document.getElementById('profile_button').style.display = 'flex';
+    document.getElementById('logout_button').style.display = 'flex';
+    document.getElementById('login_form').style.display = 'none';
     document.getElementById('login_message').innerHTML = '';
 }
 
 function profile_icons_logout() {
-    document.getElementById('profile_icon').hidden = true;
-    document.getElementById('logout_icon').hidden = true;
-    document.getElementById('login_icon').hidden = false;
+    document.getElementById('profile_button').style.display = 'none';
+    document.getElementById('logout_button').style.display = 'none';
+    document.getElementById('login_button').style.display = 'flex';
 }
 
 function toggle_profile_icons(xhhtp) {
     if (xhhtp.readyState === 4 && xhhtp.status === 200)
     {
-        response = JSON.parse(xhhtp.response);
+        let response = JSON.parse(xhhtp.response);
         if (response['status'] === 'OK')
         {
             profile_icons_login();
@@ -261,11 +261,13 @@ function toggle_like (event) {
 }
 
 function add_like_button (holder, id, item) {
-    let like_button = document.createElement('img');
+    let like_button = document.createElement('button');
     holder.appendChild(like_button);
-    like_button.className = 'gallery_item_buttons';
+    like_button.className = 'gallery_item_buttons button';
     like_button.id = 'like_' + id;
-    like_button.src = 'img/likes.png';
+    like_button.style.backgroundSize = '100%';
+    like_button.style.backgroundImage = "url('../img/likes.png')";
+    like_button.style.backgroundRepeat = 'no-repeat';
     like_button.alt = 'Like button';
     like_button.onclick = toggle_like;
     let like_button_label = document.createElement('label');
@@ -283,11 +285,13 @@ function toggle_comments (event) {
 }
 
 function add_comments (holder, id, item) {
-    let comment_button = document.createElement('img');
+    let comment_button = document.createElement('button');
     holder.appendChild(comment_button);
-    comment_button.className = 'gallery_item_buttons';
+    comment_button.className = 'gallery_item_buttons button';
     comment_button.id = 'comment_' + id;
-    comment_button.src = 'img/comments.png';
+    comment_button.style.backgroundSize = '100%';
+    comment_button.style.backgroundImage = "url('../img/comments.png')";
+    comment_button.style.backgroundRepeat = 'no-repeat';
     comment_button.alt = 'Comments button';
     comment_button.onclick = toggle_comments;
     let comment_button_label = document.createElement('label');
@@ -341,18 +345,18 @@ function add_info(holder, item) {
 function add_comment_callback (xhhtp) {
     if (xhhtp.readyState === 4 && xhhtp.status === 200)
     {
-        response = JSON.parse(xhhtp.response);
-        button = document.getElementById('comment_button_' + response['id']);
+        let response = JSON.parse(xhhtp.response);
+        let button = document.getElementById('comment_button_' + response['id']);
+        let comment = document.createElement('div');
         if (response['status'] === 'OK')
         {
-            comment = button.prepend('div');
             comment.innerHTML = response['comment'];
-            comment_info = button.prepend('section');
+            let comment_info = document.createElement('section');
+            button.prepend(comment_info);
             add_info(comment_info, response);
         }
         else
         {
-            comment = button.prepend('div');
             comment.innerHTML = response['message'];
             setTimeout(() => {comment.remove()},4 * 1000);
         }
@@ -379,11 +383,10 @@ function show_comment_form (event) {
 }
 
 function show_gallery(xhttp) {
-    let response;
     if (loading = document.getElementById('div_loading'))
         loading.remove();
     if (xhttp.readyState === 4 && xhttp.status === 200) {
-        response = JSON.parse(xhttp.response);
+        let response = JSON.parse(xhttp.response);
         if (response.rows > 0)
         {
             response.data.forEach(function (item, i, arr) {

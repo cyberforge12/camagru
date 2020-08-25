@@ -19,7 +19,10 @@ body {
 }
 
 button {
-    border-radius: 5px;
+    border: none;
+    background-color: #595956;
+    height: 32px;
+    min-width: 32px;
 }
 
 .header {
@@ -43,6 +46,9 @@ button {
 
 .user {
     margin: 10px;
+    width: 72px;
+    height: 72px;
+    background-color: #3E3E3C;
 }
 
 .profile {
@@ -60,23 +66,33 @@ button {
     z-index: 2;
 }
 
-.login_icon {
+#login_button {
+    display: none;
     height: 100%;
     cursor: pointer;
     filter: hue-rotate(180deg);
+    background-image: url("../img/login.svg");
+    background-repeat: no-repeat;
 }
 
-.profile_icon {
+#profile_button {
+    display: none;
     height: 100%;
     cursor: pointer;
     filter: hue-rotate(180deg);
+    background-image: url("../img/profile.svg");
+    background-repeat: no-repeat;
 }
 
-.logout_icon {
+#logout_button {
+    display: none;
     height: 100%;
     cursor: pointer;
     filter: hue-rotate(180deg);
+    background-image: url("../img/logout.svg");
+    background-repeat: no-repeat;
 }
+
 #login_form {
     padding: 5px;
     flex-direction: column;
@@ -236,6 +252,10 @@ button {
     align-self: center;
     margin-right: 5px;
     height: 100%;
+}
+
+.gallery_item_buttons {
+    background-color: #3E3E3C;
 }
 
 .comments_holder {
