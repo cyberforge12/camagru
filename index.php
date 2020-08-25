@@ -27,10 +27,12 @@ include_once (ROOT_PATH . 'config/setup.php');
 <form id="login_form" action="">
 	Log in
 	<hr>
-	<input id="login_input" type="email" required autofocus name="email"
-		   placeholder="e-mail">
-	<input id="passw_input" type="password" required name="passw"
+	<input id="login_username" type="text" required autofocus name="username"
+		   placeholder="username">
+	<input id="login_passw" type="password" required name="passw"
 		   placeholder="password">
+	<input id="login_email" type="email" required autofocus name="email"
+		   placeholder="e-mail">
 	<div id="login_buttons">
 		<button type="button" onclick="register()" name="action"
 				value="reg">Register</button>

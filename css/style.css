@@ -107,6 +107,10 @@ button {
     justify-content: space-between;
 }
 
+#login_email {
+    display: none;
+}
+
 #login_message {
     color: red;
 }

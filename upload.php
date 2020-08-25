@@ -179,7 +179,7 @@ function register ($arr, $dbh) {
         $query = 'INSERT INTO users VALUES (?, ?, ?, false, false)';
         $sth = $dbh->prepare($query);
         $sth->bindValue(1, $arr->login, PDO::PARAM_STR);
-        $sth->bindValue(2, $arr->login, PDO::PARAM_STR);
+        $sth->bindValue(2, $arr->email, PDO::PARAM_STR);
         $sth->bindValue(3, hash('whirlpool', $arr->passw), PDO::PARAM_STR);
         if ($sth->execute())
         {

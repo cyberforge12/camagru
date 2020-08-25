@@ -68,8 +68,8 @@ function toggle_profile_icons(xhhtp) {
 }
 
 function login() {
-    let login = document.getElementById('login_input').value;
-    let passw = document.getElementById('passw_input').value;
+    let login = document.getElementById('login_username').value;
+    let passw = document.getElementById('login_passw').value;
     let obj = {};
     obj.action = 'login';
     obj.login = login;
@@ -83,7 +83,7 @@ function login() {
 function register_callback (xhttp) {
     if (xhttp.readyState === 4 && xhttp.status === 200)
     {
-        response = JSON.parse(xhttp.response);
+        let response = JSON.parse(xhttp.response);
         if (response['status'] === 'OK')
         {
             document.getElementById('login_message').innerHTML = '';
@@ -97,14 +97,25 @@ function register_callback (xhttp) {
     }
 }
 
-function register() {
-    let login = document.getElementById('login_input').value;
-    let passw = document.getElementById('passw_input').value;
+function register_send() {
+    let login = document.getElementById('login_username').value;
+    let passw = document.getElementById('login_passw').value;
+    let email = document.getElementById('login_email').value;
     let obj = {};
     obj.action = 'register';
     obj.login = login;
     obj.passw = passw;
+    obj.email = email;
     sendJSON(obj, register_callback);
+    console.log("Register button pressed again");
+}
+
+function register() {
+    let email = document.getElementById('login_email');
+    if (email.style.display === '')
+        email.style.display = 'flex';
+    else
+        register_send();
     console.log("Register button pressed");
 }
 
