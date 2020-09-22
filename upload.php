@@ -61,7 +61,7 @@ function create_img($arr) {
 
 function get_session_user (PDO $dbh) {
     $request = 'SELECT session_user FROM
-        (SELECT *, max(date) FROM sessions GROUP BY session_id)
+        (SELECT *, max(date) FROM Session GROUP BY session_id)
         WHERE session_id = ?';
     $sth = $dbh->prepare($request);
     $sth->bindValue(1, session_id(), PDO::PARAM_STR);
@@ -79,7 +79,7 @@ function process_image($arr, PDO $dbh) {
     ob_end_clean();
     header('Content-Type: application/json');
     echo json_encode(['status' => 'OK']);
-    $query = 'INSERT INTO photos (date, photo, user, is_deleted)
+    $query = 'INSERT INTO Photo (date, photo, user, is_deleted)
         VALUES (current_timestamp, ?, ?, 0)';
     $sth = $dbh->prepare($query);
     $sth->bindValue(1, base64_encode($image_data), PDO::PARAM_STR);
@@ -92,7 +92,7 @@ function process_image($arr, PDO $dbh) {
 }
 
 function update_session ($login, PDO $dbh) {
-    $request = 'INSERT INTO sessions VALUES (?, current_timestamp, ?)';
+    $request = 'INSERT INTO Session VALUES (?, current_timestamp, ?)';
     $sth = $dbh->prepare($request);
     $sth->bindValue(1, session_id(), PDO::PARAM_STR);
     $sth->bindValue(2, $login, PDO::PARAM_STR);
@@ -103,8 +103,8 @@ function update_session ($login, PDO $dbh) {
 }
 
 function check_login ($login, $passw, PDO $dbh) {
-    $request = 'SELECT login FROM users
-        WHERE (login = ? AND password = ?)';
+    $request = 'SELECT user FROM User
+        WHERE (user = ? AND password = ?)';
     $sth = $dbh->prepare($request);
     $sth->bindValue(1, $login, PDO::PARAM_STR);
     $sth->bindValue(2, $passw, PDO::PARAM_STR);
@@ -141,7 +141,7 @@ function logout ($dbh) {
 }
 
 function check_user(string $login, PDO $dbh) {
-    $query = 'SELECT login FROM users WHERE login = ?';
+    $query = 'SELECT user FROM User WHERE user = ?';
     $sth = $dbh->prepare($query);
     $sth->bindValue(1, $login, PDO::PARAM_STR);
     if ($sth->execute()) {
@@ -156,7 +156,7 @@ function check_user(string $login, PDO $dbh) {
 
 function send_confirmation(string $email, PDO $dbh) {
     $link = time();
-    $request = 'INSERT INTO email_conf VALUES (?, ?)';
+    $request = 'INSERT INTO EmailConfirmation VALUES (?, ?)';
     $sth = $dbh->prepare($request);
     $sth->bindValue(1, $email, PDO::PARAM_STR);
     $sth->bindValue(2, $link, PDO::PARAM_STR);
@@ -176,7 +176,7 @@ function register ($arr, $dbh) {
     else if ($check === -1)
         return ['status' => 'ERROR', 'message' => 'Database error'];
     else {
-        $query = 'INSERT INTO users VALUES (?, ?, ?, false, false)';
+        $query = 'INSERT INTO User VALUES (?, ?, ?, false, false)';
         $sth = $dbh->prepare($query);
         $sth->bindValue(1, $arr->login, PDO::PARAM_STR);
         $sth->bindValue(2, $arr->email, PDO::PARAM_STR);
@@ -197,7 +197,7 @@ function resend_confirmation(PDO $dbh) {
     $user = get_session_user($dbh);
     if (!empty($user))
     {
-        $sth = $dbh->prepare('SELECT email FROM users WHERE login = ?');
+        $sth = $dbh->prepare('SELECT email FROM User WHERE user = ?');
         $sth->bindValue(1, $user, PDO::PARAM_STR);
         if ($sth->execute())
         {
@@ -222,8 +222,8 @@ function get_profile(PDO $dbh) {
     $user = get_session_user($dbh);
     if (!empty($user))
     {
-        $sth = $dbh->prepare('SELECT login, email,
-            is_confirmed, notify FROM users WHERE login = ?');
+        $sth = $dbh->prepare('SELECT user, email,
+            is_confirmed, notify FROM User WHERE user = ?');
         $sth->bindValue(1, $user, PDO::PARAM_STR);
         if ($sth->execute())
         {
@@ -240,7 +240,7 @@ function get_profile(PDO $dbh) {
 }
 
 function load_gallery(PDO $dbh) {
-    $request = 'SELECT id, date, photo, user FROM photos';
+    $request = 'SELECT date, photo, user FROM Photo';
     $sth = $dbh->prepare($request);
     $sth->execute();
     return $sth;
@@ -253,7 +253,7 @@ function get_gallery($arr, PDO $dbh) {
     $user = get_session_user($dbh);
     $limit = 10;
     $page = ( isset ( $arr->page ) ) ? $arr->page : 1;
-    $query = "SELECT id, date, photo, user FROM photos
+    $query = "SELECT photo_id, date, photo, user FROM Photo
             WHERE is_deleted = 0
             ORDER BY date DESC";
     $Paginator = new Paginator( $dbh, $query, $user );
@@ -269,21 +269,31 @@ function check_session(PDO $dbh) {
         return ['status' => 'ERROR', 'message' => 'No session login'];
 }
 
-function comment ($arr, PDO $dbh) {
-
+function get_comments ($arr, PDO $dbh) {
+    $query = 'SELECT text FROM Comment WHERE photo = ?';
+    $sth = $dbh->prepare($query);
+    $sth->bindValue(1, $arr['id']);
+    $sth->execute();
+    $ret = $sth->fetchAll();
+    return $ret;
 }
 
 function delete_photo ($arr, PDO $dbh) {
-    $query = 'UPDATE photos SET is_deleted = 1 WHERE id = ?';
+    $query = 'UPDATE Photo SET is_deleted = 1 WHERE photo_id = ?';
     $sth = $dbh->prepare($query);
-    $sth->bindValue(1, $arr['id']);
+    $sth->bindValue(1, $arr->id);
+    $sth->execute();
+    if ($sth->rowCount() > 0)
+        return ['status' => 'OK', 'message' => 'Photo deleted', 'id' =>
+            $arr->id];
+    return ['status' => 'ERROR', 'message' => 'Photo not deleted'];
 }
 
 function delete_like ($arr, PDO $dbh) {
     $user = get_session_user($dbh);
     if ($user)
     {
-        $request = 'INSERT INTO likes (user, photo, like)
+        $request = 'INSERT INTO Like (user, photo, like)
             VALUES (?, ?, 0)';
         $sth = $dbh->prepare($request);
         $sth->bindValue(1, $user);
@@ -302,7 +312,7 @@ function add_like ($arr, PDO $dbh) {
     $user = get_session_user($dbh);
     if ($user)
     {
-        $request = 'INSERT INTO likes (user, photo, like)
+        $request = 'INSERT INTO Like (user, photo, like)
             VALUES (?, ?, 1)';
         $sth = $dbh->prepare($request);
         $sth->bindValue(1, $user);
@@ -321,7 +331,7 @@ function add_comment ($arr, PDO $dbh) {
     $user = get_session_user($dbh);
     if ($user)
     {
-        $request = 'INSERT INTO comments (text, user, photo)
+        $request = 'INSERT INTO Comment (text, user, photo)
             VALUES (?, ?, ?)';
         $sth = $dbh->prepare($request);
         $sth->bindValue(1, $arr->data);
@@ -331,7 +341,7 @@ function add_comment ($arr, PDO $dbh) {
             return ['status' => 'OK', 'message' => 'Comment recorded',
                 'id' => $arr->id];
     }
-    return ['status' => 'ERROR', 'message' => 'Comment not recorded', 'id' => $arr->id];
+    return ['status' => 'ERROR', 'message' => 'Comment not recorded. Please log in.', 'id' => $arr->id];
 }
 
 $json = file_get_contents("php://input");
@@ -358,7 +368,7 @@ if (isset($dbh))
     elseif ($arr->action === 'get_gallery')
         $ret = get_gallery($arr, $dbh);
     elseif ($arr->action === 'comment')
-        $ret = comment($arr, $dbh);
+        $ret = get_comments($arr, $dbh);
     elseif ($arr->action === 'delete')
         $ret = delete_photo($arr, $dbh);
     elseif ($arr->action === 'add_like')

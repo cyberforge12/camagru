@@ -76,7 +76,7 @@ function login() {
     obj.passw = passw;
     sendJSON(obj, toggle_profile_icons);
     check_session();
-    load_gallery();
+    loa
     console.log('Login button pressed');
 }
 
@@ -213,7 +213,7 @@ function snapshot() {
     }
     sendJSON(obj, (e) => {
         if (e.readyState === 4 && e.status === 200)
-            load_gallery();
+            this.gallery.load_gallery();
     });
 }
 
@@ -276,42 +276,195 @@ function add_like_button (holder, id, item) {
     holder.appendChild(like_button_label);
 }
 
-function toggle_comments (event) {
-    let id = (event.currentTarget.id.split('_'))[1];
-    document.getElementById('comments_holder_' + id).style.display = 'flex';
-    let comments_section = document.createElement('section');
-    event.currentTarget.parentNode.parentNode.appendChild(comments_section);
-    console.log('Comments button ' + event.currentTarget.id + ' pressed');
+class Gallery {
+
+    load_gallery() {
+        page = 1;
+        let new_gal = document.getElementById('gallery').cloneNode(false);
+        document.getElementById('gallery').remove();
+        document.getElementById('side').prepend(new_gal);
+        sendJSON({'action': 'get_gallery', 'page' : page}, show_gallery);
+    }
 }
 
-function add_comments (holder, id, item) {
+class GalleryItem {
+
+}
+
+class Comments {
+
+    constructor(id) {
+        this.id = id;
+        this.holder = document.createElement('section');
+        this.holder.id = ('comments_holder_' + this.id);
+        this.holder.className = 'comments_holder';
+        document.getElementById(id).appendChild(this.holder);
+
+        this.comments = document.createElement('section');
+        this.comments.className = 'comments';
+        this.holder.appendChild(this.comments);
+
+        this.comment_form = document.createElement('input');
+        this.comment_form.className = 'comment_form';
+        this.comment_form.style.display = 'none';
+        this.holder.appendChild(this.comment_form);
+
+        this.comment_button = document.createElement('button');
+        this.holder.appendChild(this.comment_button);
+        this.comment_button.className = 'comment_button';
+        this.comment_button.id = ('comment_button_' + this.id);
+        this.comment_button.innerHTML = 'Add comment';
+
+        this.send_button = document.createElement('button');
+        this.holder.appendChild(this.send_button);
+        this.send_button.className = 'send_comment';
+        this.send_button.id = ('send_comment_button_' + this.id);
+        this.send_button.innerHTML = 'Send comment';
+        this.send_button.style.display = 'none';
+
+        this.comment_button.onclick = () => this.show_comment_form();
+        this.send_button.onclick = () => this.send_comment();
+
+        this.toggle_comments();
+        this.get_comments();
+    }
+
+    toggle_comments () {
+        if (this.holder.style.display === 'flex')
+            this.holder.style.display = 'none';
+        else {
+            this.get_comments();
+            this.holder.style.display = 'flex';
+        }
+    }
+
+    show_comment_form () {
+        this.comment_form.style.display = 'flex';
+        this.comment_button.style.display = 'none';
+        this.send_button.style.display = 'flex';
+    }
+
+    get_comments () {
+        sendJSON({'action': 'get_comments', 'id' : this.id},
+            (e) => this.get_comments_callback(e));
+    }
+
+    get_comments_callback (event) {
+        console.log('get_comments_callback');
+        if (event.readyState === 4 && event.status === 200)
+        {
+            let response = JSON.parse(event.response);
+            if (response['status'] === 'OK')
+            {
+                response['comments'].forEach( (e, obj = this) => {
+                    let comment = document.createElement('div');
+                    obj.comments.appendChild(comment);
+                    comment.innerHTML = e.comment;
+                    let comment_info = document.createElement('section');
+                    comment_info.className = 'comment_info';
+                    obj.comments.appendChild(comment_info);
+                    obj.add_info(comment_info, response);
+                })
+            }
+            else
+            {
+                this.comments.innerHTML = response['message'];
+                setTimeout(() => {this.comments.innerHTML = "";},
+                    4 * 1000);
+            }
+        }
+    }
+
+    add_info(holder, item) {
+
+        let div1 = document.createElement('div');
+        div1.innerHTML = 'Created by';
+        holder.appendChild(div1);
+
+        let div2 = document.createElement('div');
+        div2.innerHTML = item.user;
+        holder.appendChild(div2);
+
+        let div3 = document.createElement('div');
+        div3.innerHTML = ' at ';
+        holder.appendChild(div3);
+
+        let div4 = document.createElement('div');
+        div4.innerHTML = item.date;
+        holder.appendChild(div4);
+    }
+
+    send_comment() {
+        sendJSON({'action': 'add_comment', 'id': this.id,
+            'data': this.comment_form.value}, (e) => this.send_comment_callback(e));
+    }
+
+    send_comment_callback (e) {
+        if (e.readyState === 4 && e.status === 200)
+        {
+            let response = JSON.parse(e.response);
+            let comment = document.createElement('div');
+            this.comments.appendChild(comment);
+            if (response['status'] === 'OK')
+            {
+                comment.innerHTML = this.comment_form.value;
+                let comment_info = document.createElement('section');
+                comment_info.className = 'comment_info';
+                this.comments.appendChild(comment_info);
+                add_info(comment_info, response);
+            }
+            else
+            {
+                this.comments.innerHTML = response['message'];
+                setTimeout(() => {this.comments.innerHTML = ""},
+                    4 * 1000);
+            }
+        }
+    }
+}
+
+function add_comment_button (holder, id, item) {
     let comment_button = document.createElement('button');
     holder.appendChild(comment_button);
+    let comments_class = new Comments(id);
     comment_button.className = 'gallery_item_buttons button';
     comment_button.id = 'comment_' + id;
     comment_button.style.backgroundSize = '100%';
     comment_button.style.backgroundImage = "url('../img/comments.png')";
     comment_button.style.backgroundRepeat = 'no-repeat';
     comment_button.alt = 'Comments button';
-    comment_button.onclick = toggle_comments;
+    comment_button.onclick = () => comments_class.toggle_comments();
     let comment_button_label = document.createElement('label');
     comment_button_label.htmlFor = 'comment_' + id;
     comment_button_label.innerHTML = item.comments;
     holder.appendChild(comment_button_label);
 }
 
+function delete_gallery_item_callback (xhhtp) {
+    if (xhhtp.readyState === 4 && xhhtp.status === 200)
+    {
+        let response = JSON.parse(xhhtp.response);
+        if (response['status'] === 'OK')
+        {
+            let gallery_item = document.getElementById(response.id);
+            gallery_item.remove();
+        }
+    }
+}
+
 function delete_gallery_item (event) {
     obj = {};
     obj.action = 'delete';
-    obj.id = event.currentTarget.parentElement.id;
-    console.log('Delete button ' + event.currentTarget.id + ' pressed');
+    obj.id = (event.currentTarget.id.split('_'))[1];
+    sendJSON(obj, delete_gallery_item_callback);
+    console.log('Delete button ' + obj.id + ' pressed');
 }
 
 function add_actions(holder, item) {
-    let id = item.id;
+    let id = item.photo_id;
     add_like_button(holder, id, item);
-    add_comments(holder, id, item);
-    if (item.delete === 1)
+    add_comment_button(holder, id, item);
+    if (item.delete == 1)
     {
         let delete_button = document.createElement('img');
         holder.appendChild(delete_button);
@@ -342,46 +495,6 @@ function add_info(holder, item) {
     holder.appendChild(div4);
 }
 
-function add_comment_callback (xhhtp) {
-    if (xhhtp.readyState === 4 && xhhtp.status === 200)
-    {
-        let response = JSON.parse(xhhtp.response);
-        let button = document.getElementById('comment_button_' + response['id']);
-        let comment = document.createElement('div');
-        if (response['status'] === 'OK')
-        {
-            comment.innerHTML = response['comment'];
-            let comment_info = document.createElement('section');
-            button.prepend(comment_info);
-            add_info(comment_info, response);
-        }
-        else
-        {
-            comment.innerHTML = response['message'];
-            setTimeout(() => {comment.remove()},4 * 1000);
-        }
-    }
-}
-
-function show_comment_form (event) {
-    let id = (event.currentTarget.id.split('_'))[2];
-    button = document.getElementById('comment_button_' + id);
-    button.style.display = 'none';
-    comment_form = document.createElement('input');
-    comment_form.className = 'comment_form';
-    button.parentNode.appendChild(comment_form);
-
-    send_comment = document.createElement('button');
-    button.parentNode.appendChild(send_comment);
-    send_comment.className = 'send_comment';
-    send_comment.innerHTML = 'Send comment';
-    send_comment.onclick = function () {
-        sendJSON({'action': 'add_comment', 'id': id,
-            'data': comment_form.value}, add_comment_callback);
-    }
-    console.log('Send comment button ' + id + ' pressed');
-}
-
 function show_gallery(xhttp) {
     if (loading = document.getElementById('div_loading'))
         loading.remove();
@@ -392,7 +505,7 @@ function show_gallery(xhttp) {
             response.data.forEach(function (item, i, arr) {
                 let gallery_item = document.createElement('section');
                 document.getElementById('gallery').appendChild(gallery_item);
-                gallery_item.id = item.id;
+                gallery_item.id = item.photo_id;
                 gallery_item.className = 'gallery_item';
                 let gallery_item_img = document.createElement('img');
                 gallery_item.appendChild(gallery_item_img);
@@ -405,18 +518,6 @@ function show_gallery(xhttp) {
                 gallery_item.appendChild(gallery_item_actions);
                 gallery_item_actions.className = 'gallery_item_actions_holder';
                 add_actions(gallery_item_actions, item);
-                let comments_section = document.createElement('section');
-                gallery_item.appendChild(comments_section);
-                comments_section.className = 'comments_holder';
-                comments_section.style.display = 'none';
-                comments_section.id = 'comments_holder_' + item.id;
-                let comment_button = document.createElement('button');
-                comments_section.appendChild(comment_button);
-                comment_button.className = 'comment_button';
-                comment_button.id = 'comment_button_' + item.id;
-                comment_button.onclick = show_comment_form;
-                comment_button.innerHTML = 'Add comment';
-
             })
             if (response.rows === 10)
                 add_load_more_button();
@@ -446,14 +547,6 @@ function load_more () {
 
 }
 
-function load_gallery() {
-    page = 1;
-    let new_gal = document.getElementById('gallery').cloneNode(false);
-    document.getElementById('gallery').remove();
-    document.getElementById('side').prepend(new_gal);
-    sendJSON({'action': 'get_gallery', 'page' : page}, show_gallery);
-}
-
 
 function check_session () {
     let obj = {};
@@ -462,8 +555,9 @@ function check_session () {
     console.log('Check_session called');
 }
 
+gallery = new Gallery();
 document.onload = check_session();
-document.onload = load_gallery();
+document.onload = this.gallery.load_gallery();
 navigator.mediaDevices.getUserMedia({video: true})
     .then(function (stream) {
         if (stream)
@@ -480,6 +574,7 @@ navigator.mediaDevices.getUserMedia({video: true})
         if (reason)
             document.getElementById('upload').style.display = 'flex';
     });
+
 
 var test = document.getElementById('test');
 test.onclick = function () {

@@ -3,7 +3,7 @@ require_once('constants.php');
 require_once ('config/database.php');
 
 function check_confirmation ($link, PDO $dbh) {
-    $request = 'SELECT email from email_conf WHERE id = ?';
+    $request = 'SELECT email from EmailConfirmation WHERE id = ?';
     $sth = $dbh->prepare($request);
     if ($sth->execute([$link]))
         return $sth->fetch()[0];
@@ -16,7 +16,7 @@ if (isset($_GET['link']))
 {
     if ($email = check_confirmation($_GET['link'], $dbh))
     {
-        $request = 'UPDATE users SET is_confirmed = true  WHERE email = ?';
+        $request = 'UPDATE User SET is_confirmed = true  WHERE email = ?';
         $sth = $dbh->prepare($request);
         if ($sth->execute([$email]))
             echo json_encode(['status' => 'OK', 'message' => 'E-mail confirmed']);
