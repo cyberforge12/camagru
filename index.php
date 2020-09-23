@@ -10,11 +10,6 @@ include_once (ROOT_PATH . 'config/setup.php');
 	<title>Camagru</title>
 </head>
 <body>
-<!--<div class="test" id="test" onmouseover="test_over(this)"-->
-<!--	 onmouseleave="test_leave(this)-->
-<!--">TEST-->
-<!--	CLASS-->
-<!--	- ONCLICK --><?//=print_r($_COOKIE)?><!--</div>-->
 <header class="header">
 	<div id="header_text">CAMAGRU</div>
 	<button class="user" id="login_button" onclick="login_form_toggle(this)"
@@ -92,7 +87,6 @@ include_once (ROOT_PATH . 'config/setup.php');
 			disabled title="Select as overlay image above">SEND</button>
 </main>
 <section class="side" id="side">
-	<section id="gallery"></section>
 </section>
 
 </section>

@@ -256,6 +256,21 @@ button {
 
 .gallery_item_buttons {
     background-color: #3E3E3C;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+.delete_button {
+    background-image: url('../img/delete.png');
+}
+
+.like_button {
+    background-image: url('../img/likes.png');
+}
+
+.comment_button {
+    background-image: url('../img/comments.png');
 }
 
 .comments_holder {

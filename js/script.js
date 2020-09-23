@@ -6,66 +6,6 @@ var track = null;
 var track_settings = null;
 var video_ratio = null;
 var snapshot_button = document.getElementById('snapshot');
-var page = 1;
-
-function test_over(item) {
-    console.log('over');
-    console.log(item);
-    item.style.backgroundColor = 'blue';
-}
-
-function test_leave(item) {
-    console.log('leave');
-    console.log(item);
-    item.style.backgroundColor = 'gray';
-}
-
-function login_form_toggle() {
-    var login = document.getElementById('login_form');
-    if (!display_login)
-    {
-        login.style.display = 'flex';
-        display_login = true;
-    }
-    else
-    {
-        login.style.display = '';
-        display_login = false;
-    }
-}
-
-function profile_icons_login() {
-    document.getElementById('login_button').style.display = 'none';
-    document.getElementById('profile_button').style.display = 'flex';
-    document.getElementById('logout_button').style.display = 'flex';
-    document.getElementById('login_form').style.display = 'none';
-    document.getElementById('login_message').innerHTML = '';
-}
-
-function profile_icons_logout() {
-    document.getElementById('profile_button').style.display = 'none';
-    document.getElementById('logout_button').style.display = 'none';
-    document.getElementById('login_button').style.display = 'flex';
-}
-
-function toggle_profile_icons(xhhtp) {
-    if (xhhtp.readyState === 4 && xhhtp.status === 200)
-    {
-        let response = JSON.parse(xhhtp.response);
-        if (response['status'] === 'OK')
-        {
-            profile_icons_login();
-            console.log('Login OK: ' + xhhtp.response);
-        }
-        else
-        {
-            profile_icons_logout();
-            if (response['status'] === 'ERROR_LOGIN')
-                document.getElementById('login_message').innerHTML = 'Incorrect login or password';
-            console.log('Login Error: ' + xhhtp.response);
-        }
-    }
-}
 
 function login() {
     let login = document.getElementById('login_username').value;
@@ -74,9 +14,8 @@ function login() {
     obj.action = 'login';
     obj.login = login;
     obj.passw = passw;
-    sendJSON(obj, toggle_profile_icons);
-    check_session();
-    loa
+    sendJSON(obj, (e) => profile.toggle_profile_icons(e));
+    profile.check_session();
     console.log('Login button pressed');
 }
 
@@ -145,7 +84,7 @@ function resend_confirmation() {
 }
 
 function open_profile() {
-    profile = document.getElementById('profile');
+    let profile = document.getElementById('profile');
     if (profile.style.display === '')
     {
         profile.style.display = 'flex';
@@ -163,6 +102,19 @@ function open_profile() {
 function logout() {
     sendJSON({"action": "logout"}, () => {location.reload()});
     console.log('OK - logout');
+}
+function login_form_toggle() {
+    var login = document.getElementById('login_form');
+    if (!display_login)
+    {
+        login.style.display = 'flex';
+        display_login = true;
+    }
+    else
+    {
+        login.style.display = '';
+        display_login = false;
+    }
 }
 
 function select_img(item) {
@@ -260,35 +212,213 @@ function toggle_like (event) {
     console.log('Like button ' + elem.id + ' pressed');
 }
 
-function add_like_button (holder, id, item) {
-    let like_button = document.createElement('button');
-    holder.appendChild(like_button);
-    like_button.className = 'gallery_item_buttons button';
-    like_button.id = 'like_' + id;
-    like_button.style.backgroundSize = '100%';
-    like_button.style.backgroundImage = "url('../img/likes.png')";
-    like_button.style.backgroundRepeat = 'no-repeat';
-    like_button.alt = 'Like button';
-    like_button.onclick = toggle_like;
-    let like_button_label = document.createElement('label');
-    like_button_label.htmlFor = 'like_' + id;
-    like_button_label.innerHTML = item.likes;
-    holder.appendChild(like_button_label);
+class Profile {
+
+    constructor() {
+        this.login_form = document.getElementById('login_form_tmp');
+        this.login_button = document.getElementById('login_button_tmp');
+        this.profile_button = document.getElementById('profile_button_tmp');
+        this.logout_button = document.getElementById('logout_button_tmp');
+
+        this.check_session();
+    }
+
+    check_session () {
+        sendJSON({action: "check_session"}, (e) => this.toggle_profile_icons(e));
+        console.log('Check_session called');
+    }
+
+    profile_icons_login() {
+        document.getElementById('login_button').style.display = 'none';
+        document.getElementById('profile_button').style.display = 'flex';
+        document.getElementById('logout_button').style.display = 'flex';
+        document.getElementById('login_form').style.display = 'none';
+        document.getElementById('login_message').innerHTML = '';
+    }
+
+    profile_icons_logout() {
+        document.getElementById('profile_button').style.display = 'none';
+        document.getElementById('logout_button').style.display = 'none';
+        document.getElementById('login_button').style.display = 'flex';
+    }
+
+    toggle_profile_icons(e) {
+        if (e.readyState === 4 && e.status === 200)
+        {
+            let response = JSON.parse(e.response);
+            if (response['status'] === 'OK')
+            {
+                this.profile_icons_login();
+                console.log('Login OK: ' + e.response);
+            }
+            else
+            {
+                this.profile_icons_logout();
+                if (response['status'] === 'ERROR_LOGIN')
+                    document.getElementById('login_message').innerHTML = 'Incorrect login or password';
+                console.log('Login Error: ' + e.response);
+            }
+        }
+    }
+
 }
 
 class Gallery {
 
+    constructor() {
+        this.page = 1;
+        this.gallery = undefined;
+
+        this.load_gallery();
+    }
+
     load_gallery() {
-        page = 1;
-        let new_gal = document.getElementById('gallery').cloneNode(false);
-        document.getElementById('gallery').remove();
-        document.getElementById('side').prepend(new_gal);
-        sendJSON({'action': 'get_gallery', 'page' : page}, show_gallery);
+        this.page = 1;
+        if (this.gallery !== undefined)
+            this.gallery.remove();
+        this.gallery = document.createElement('section');
+        this.gallery.id = 'gallery';
+        document.getElementById('side').prepend(this.gallery);
+        sendJSON({'action': 'get_gallery', 'page' : this.page},
+            (e) => this.load_gallery_callback(e));
+    }
+
+    load_gallery_callback(e) {
+        if (e.readyState === 4 && e.status === 200) {
+            let response = JSON.parse(e.response);
+            if (response.rows > 0)
+            {
+                response.data.forEach(function (item) {
+                    let gallery_item = new GalleryItem(item);
+                })
+            }
+            if (response.rows === 10)
+                this.add_load_more_button();
+        }
+    }
+
+    add_load_more_button () {
+        let load_more_button = document.createElement('button');
+        load_more_button.id = 'gallery_more';
+        load_more_button.innerHTML = 'Load more...';
+        load_more_button.addEventListener('click', () => this.load_more);
+        this.gallery.appendChild(load_more_button);
+        this.page += 1;
+    }
+
+    load_more () {
+        document.getElementById('gallery_more').remove();
+        let loading = document.createElement('div');
+        document.getElementById('gallery').appendChild(loading);
+        loading.id = 'div_loading';
+        loading.innerHTML = 'Loading...';
+        loading.style.textAlign = 'center';
+        this.page += 1;
+        sendJSON({'action': 'get_gallery', 'page' : page},
+            this.load_gallery_callback);
+        console.log('load more...');
     }
 }
 
 class GalleryItem {
 
+    constructor(response) {
+        this.likes = response["likes"];
+        this.user_like = response["user_like"];
+        this.comments = response["comments"];
+        this.delete = response["delete"];
+        this.id = response["photo_id"];
+        this.gallery = document.getElementById('gallery');
+
+        this.gallery_item = document.createElement('section');
+        this.gallery_item.id = this.id;
+        this.gallery_item.className = 'gallery_item';
+        this.gallery.appendChild(this.gallery_item);
+
+        let gallery_item_img = document.createElement('img');
+        this.gallery_item.appendChild(gallery_item_img);
+        gallery_item_img.src = 'data:image/png;base64, ' + response["photo"];
+
+        let gallery_item_info = document.createElement('section');
+        this.gallery_item.appendChild(gallery_item_info);
+        gallery_item_info.className = 'gallery_item_info';
+        add_info(gallery_item_info, response);
+
+        this.actions = new GalleryItemActions(this);
+    }
+
+    delete_item_callback (e) {
+        if (e.readyState === 4 && e.status === 200)
+        {
+            let response = JSON.parse(e.response);
+            if (response['status'] === 'OK')
+            {
+                let gallery_item = document.getElementById(response.id);
+                gallery_item.remove();
+            }
+        }
+    }
+
+    delete_item () {
+        let obj = {action: 'delete',
+            id: this.id
+        };
+        sendJSON(obj, (e) => this.delete_item_callback(e));
+        console.log('Delete button ' + obj.id + ' pressed');
+    }
+}
+
+class GalleryItemActions {
+
+    constructor(item) {
+        this.id = item.id;
+        this.parent = item;
+        this.holder = document.createElement('section');
+        this.holder.className = 'gallery_item_actions_holder';
+        item.gallery_item.appendChild(this.holder);
+        this.add_like_button();
+        this.add_comment_button();
+        if (item.delete == 1)
+            this.add_delete_button();
+    }
+
+    add_delete_button() {
+        let delete_button = document.createElement('button');
+        this.holder.appendChild(delete_button);
+        delete_button.className = 'gallery_item_buttons button delete_button';
+        delete_button.id = 'delete_' + this.id;
+        delete_button.alt = 'Delete button';
+        delete_button.onclick = () => this.parent.delete_item();
+    }
+
+    add_like_button()
+    {
+        let like_button = document.createElement('button');
+        this.holder.appendChild(like_button);
+        like_button.className = 'gallery_item_buttons button like_button';
+        like_button.id = 'like_' + this.id;
+        like_button.alt = 'Like button';
+        like_button.onclick = toggle_like;
+        let like_button_label = document.createElement('label');
+        like_button_label.htmlFor = 'like_' + this.id;
+        like_button_label.innerHTML = this.parent.likes;
+        this.holder.appendChild(like_button_label);
+    }
+
+    add_comment_button()
+    {
+        let comment_button = document.createElement('button');
+        this.holder.appendChild(comment_button);
+        let comments_class = new Comments(this.id);
+        comment_button.className = 'gallery_item_buttons button comment_button';
+        comment_button.id = 'comment_' + this.id;
+        comment_button.alt = 'Comments button';
+        comment_button.onclick = () => comments_class.toggle_comments();
+        let comment_button_label = document.createElement('label');
+        comment_button_label.htmlFor = 'comment_' + this.id;
+        comment_button_label.innerHTML = this.parent.comments;
+        this.holder.appendChild(comment_button_label);
+    }
 }
 
 class Comments {
@@ -324,9 +454,6 @@ class Comments {
 
         this.comment_button.onclick = () => this.show_comment_form();
         this.send_button.onclick = () => this.send_comment();
-
-        this.toggle_comments();
-        this.get_comments();
     }
 
     toggle_comments () {
@@ -423,59 +550,6 @@ class Comments {
     }
 }
 
-function add_comment_button (holder, id, item) {
-    let comment_button = document.createElement('button');
-    holder.appendChild(comment_button);
-    let comments_class = new Comments(id);
-    comment_button.className = 'gallery_item_buttons button';
-    comment_button.id = 'comment_' + id;
-    comment_button.style.backgroundSize = '100%';
-    comment_button.style.backgroundImage = "url('../img/comments.png')";
-    comment_button.style.backgroundRepeat = 'no-repeat';
-    comment_button.alt = 'Comments button';
-    comment_button.onclick = () => comments_class.toggle_comments();
-    let comment_button_label = document.createElement('label');
-    comment_button_label.htmlFor = 'comment_' + id;
-    comment_button_label.innerHTML = item.comments;
-    holder.appendChild(comment_button_label);
-}
-
-function delete_gallery_item_callback (xhhtp) {
-    if (xhhtp.readyState === 4 && xhhtp.status === 200)
-    {
-        let response = JSON.parse(xhhtp.response);
-        if (response['status'] === 'OK')
-        {
-            let gallery_item = document.getElementById(response.id);
-            gallery_item.remove();
-        }
-    }
-}
-
-function delete_gallery_item (event) {
-    obj = {};
-    obj.action = 'delete';
-    obj.id = (event.currentTarget.id.split('_'))[1];
-    sendJSON(obj, delete_gallery_item_callback);
-    console.log('Delete button ' + obj.id + ' pressed');
-}
-
-function add_actions(holder, item) {
-    let id = item.photo_id;
-    add_like_button(holder, id, item);
-    add_comment_button(holder, id, item);
-    if (item.delete == 1)
-    {
-        let delete_button = document.createElement('img');
-        holder.appendChild(delete_button);
-        delete_button.id = 'delete_' + id;
-        delete_button.src = 'img/delete.png';
-        delete_button.alt = 'Delete button';
-        delete_button.className = 'gallery_item_buttons';
-        delete_button.onclick = delete_gallery_item;
-    }
-}
-
 function add_info(holder, item) {
 
     let div1 = document.createElement('div');
@@ -495,69 +569,17 @@ function add_info(holder, item) {
     holder.appendChild(div4);
 }
 
-function show_gallery(xhttp) {
-    if (loading = document.getElementById('div_loading'))
-        loading.remove();
-    if (xhttp.readyState === 4 && xhttp.status === 200) {
-        let response = JSON.parse(xhttp.response);
-        if (response.rows > 0)
-        {
-            response.data.forEach(function (item, i, arr) {
-                let gallery_item = document.createElement('section');
-                document.getElementById('gallery').appendChild(gallery_item);
-                gallery_item.id = item.photo_id;
-                gallery_item.className = 'gallery_item';
-                let gallery_item_img = document.createElement('img');
-                gallery_item.appendChild(gallery_item_img);
-                gallery_item_img.src = 'data:image/png;base64, ' + item.photo;
-                let gallery_item_info = document.createElement('section');
-                gallery_item.appendChild(gallery_item_info);
-                gallery_item_info.className = 'gallery_item_info';
-                add_info(gallery_item_info, item);
-                let gallery_item_actions = document.createElement('section');
-                gallery_item.appendChild(gallery_item_actions);
-                gallery_item_actions.className = 'gallery_item_actions_holder';
-                add_actions(gallery_item_actions, item);
-            })
-            if (response.rows === 10)
-                add_load_more_button();
-        }
+function check_template() {
+    if (!('content' in document.createElement('template'))) {
+        let warning = document.createElement('div');
+        warning.innerHTML = "Your browser doesn't support templates. Use another browser";
+        document.getElementsByTagName('header')[0].append(warning);
     }
 }
-
-function add_load_more_button () {
-    let load_more_button = document.createElement('button');
-    document.getElementById('gallery').appendChild(load_more_button);
-    load_more_button.id = 'gallery_more';
-    load_more_button.innerHTML = 'Load more...';
-    load_more_button.addEventListener('click', load_more);
-    page++;
-}
-
-function load_more () {
-    document.getElementById('gallery_more').remove();
-    let loading = document.createElement('div');
-    document.getElementById('gallery').appendChild(loading);
-    loading.id = 'div_loading';
-    loading.innerHTML = 'Loading...';
-    loading.style.textAlign = 'center';
-    page++;
-    sendJSON({'action': 'get_gallery', 'page' : page}, show_gallery);
-    console.log('load more...');
-
-}
-
-
-function check_session () {
-    let obj = {};
-    obj.action = 'check_session';
-    sendJSON(obj, toggle_profile_icons);
-    console.log('Check_session called');
-}
-
+check_template();
+profile = new Profile();
 gallery = new Gallery();
-document.onload = check_session();
-document.onload = this.gallery.load_gallery();
+
 navigator.mediaDevices.getUserMedia({video: true})
     .then(function (stream) {
         if (stream)
@@ -574,11 +596,3 @@ navigator.mediaDevices.getUserMedia({video: true})
         if (reason)
             document.getElementById('upload').style.display = 'flex';
     });
-
-
-var test = document.getElementById('test');
-test.onclick = function () {
-    alert('Thank you!');
-    test.style.backgroundColor = 'green';
-}
-
