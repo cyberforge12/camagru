@@ -580,6 +580,21 @@ check_template();
 profile = new Profile();
 gallery = new Gallery();
 
+document.addEventListener('click', function(event) {
+    let target = event.target;
+    let profile_info = document.getElementById('profile');
+    let profile_button = document.getElementById('profile_button');
+    if (profile_info.style.display === "flex") {
+        if (profile_info.contains(target))
+        // if (target === profile_info)
+            return ;
+        // else if (target === profile_button)
+        //     return ;
+        else
+            open_profile();
+    }
+}, true);
+
 navigator.mediaDevices.getUserMedia({video: true})
     .then(function (stream) {
         if (stream)
