@@ -344,6 +344,22 @@ function add_comment ($arr, PDO $dbh) {
     return ['status' => 'ERROR', 'message' => 'Comment not recorded. Please log in.', 'id' => $arr->id];
 }
 
+function notify ($arr, PDO $dbh) {
+    $user = get_session_user($dbh);
+    if ($user)
+    {
+        $request = 'UPDATE User SET notify = ? WHERE user = ?';
+        $sth = $dbh->prepare($request);
+        $sth->bindValue(1, $arr->value);
+        $sth->bindValue(2, $user);
+        if ($sth->execute())
+            return ['status' => 'OK', 'message' => 'Notification settings changed',
+                'id' => $arr->id];
+    }
+    return ['status' => 'ERROR', 'message' => 'Comment not recorded. Please log in.', 'id' => $arr->id];
+
+}
+
 $json = file_get_contents("php://input");
 $arr = json_decode($json);
 $ret = '';
@@ -377,6 +393,10 @@ if (isset($dbh))
         $ret = delete_like($arr, $dbh);
     elseif ($arr->action === 'add_comment')
         $ret = add_comment($arr, $dbh);
+    elseif ($arr->action === 'notify')
+        $ret = notify($arr, $dbh);
+    else
+        $ret = ['status' => 'ERROR', 'message' => 'Illegal action'];
 }
 else
     $ret = ['status' => 'ERROR', 'message' => 'Database error'];

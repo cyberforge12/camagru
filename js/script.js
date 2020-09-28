@@ -99,6 +99,23 @@ function open_profile() {
     console.log('Open profile pressed');
 }
 
+function toggle_notify_callback(e) {
+    if (e.readyState === 4 && e.status === 200)
+    {
+        let response = JSON.parse(e.response);
+        if (response['status'] === 'OK')
+            open_profile();
+    }
+}
+
+function toggle_notify() {
+    let checkbox = document.getElementById('profile_notify');
+    if (checkbox.checked)
+        sendJSON({action: 'notify', value: 1}, toggle_notify_callback)
+    else
+        sendJSON({action: 'notify', value: 0}, toggle_notify_callback)
+}
+
 function logout() {
     sendJSON({"action": "logout"}, () => {location.reload()});
     console.log('OK - logout');
