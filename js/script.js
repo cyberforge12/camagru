@@ -400,13 +400,13 @@ class GalleryItemActions {
         this.holder = document.createElement('section');
         this.holder.className = 'gallery_item_actions_holder';
         item.gallery_item.appendChild(this.holder);
-        this.add_like_button();
-        this.add_comment_button();
+        this.create_like_button();
+        this.create_comments_button();
         if (item.delete == 1)
-            this.add_delete_button();
+            this.create_delete_button();
     }
 
-    add_delete_button() {
+    create_delete_button() {
         let delete_button = document.createElement('button');
         this.holder.appendChild(delete_button);
         delete_button.className = 'gallery_item_buttons button delete_button';
@@ -415,7 +415,7 @@ class GalleryItemActions {
         delete_button.onclick = () => this.parent.delete_item();
     }
 
-    add_like_button()
+    create_like_button()
     {
         let like_button = document.createElement('button');
         this.holder.appendChild(like_button);
@@ -429,12 +429,12 @@ class GalleryItemActions {
         this.holder.appendChild(like_button_label);
     }
 
-    add_comment_button()
+    create_comments_button()
     {
         let comment_button = document.createElement('button');
         this.holder.appendChild(comment_button);
         let comments_class = new Comments(this.id);
-        comment_button.className = 'gallery_item_buttons button comment_button';
+        comment_button.className = 'gallery_item_buttons button comments_button';
         comment_button.id = 'comment_' + this.id;
         comment_button.alt = 'Comments button';
         comment_button.onclick = () => comments_class.toggle_comments();
@@ -458,20 +458,20 @@ class Comments {
         this.comments.className = 'comments';
         this.holder.appendChild(this.comments);
 
-        this.comment_form = document.createElement('input');
+        this.comment_form = document.createElement('textarea');
         this.comment_form.className = 'comment_form';
         this.comment_form.style.display = 'none';
         this.holder.appendChild(this.comment_form);
 
         this.comment_button = document.createElement('button');
         this.holder.appendChild(this.comment_button);
-        this.comment_button.className = 'comment_button';
+        this.comment_button.className = 'add_comment_button text_button';
         this.comment_button.id = ('comment_button_' + this.id);
         this.comment_button.innerHTML = 'Add comment';
 
         this.send_button = document.createElement('button');
         this.holder.appendChild(this.send_button);
-        this.send_button.className = 'send_comment';
+        this.send_button.className = 'send_comment_button text_button';
         this.send_button.id = ('send_comment_button_' + this.id);
         this.send_button.innerHTML = 'Send comment';
         this.send_button.style.display = 'none';
@@ -492,7 +492,7 @@ class Comments {
     show_comment_form () {
         this.comment_form.style.display = 'flex';
         this.comment_button.style.display = 'none';
-        this.send_button.style.display = 'flex';
+        this.send_button.style.display = 'block';
     }
 
     get_comments () {
@@ -507,14 +507,15 @@ class Comments {
             let response = JSON.parse(event.response);
             if (response['status'] === 'OK')
             {
-                response['comments'].forEach( (e, obj = this) => {
+                response['comments'].forEach( e => {
                     let comment = document.createElement('div');
-                    obj.comments.appendChild(comment);
-                    comment.innerHTML = e.comment;
+                    comment.className = 'comment';
+                    this.comments.appendChild(comment);
+                    comment.innerHTML = e.text;
                     let comment_info = document.createElement('section');
-                    comment_info.className = 'comment_info';
-                    obj.comments.appendChild(comment_info);
-                    obj.add_info(comment_info, response);
+                    comment_info.className = 'gallery_item_info';
+                    this.comments.appendChild(comment_info);
+                    add_info(comment_info, e);
                 })
             }
             else
@@ -558,11 +559,11 @@ class Comments {
             this.comments.appendChild(comment);
             if (response['status'] === 'OK')
             {
-                comment.innerHTML = this.comment_form.value;
-                let comment_info = document.createElement('section');
-                comment_info.className = 'comment_info';
-                this.comments.appendChild(comment_info);
-                add_info(comment_info, response);
+                this.comments.remove();
+                this.comments = document.createElement('section');
+                this.comments.className = 'comments';
+                this.holder.insertBefore(this.comments, this.holder.firstChild);
+                this.get_comments();
             }
             else
             {
@@ -589,7 +590,7 @@ function add_info(holder, item) {
     holder.appendChild(div3);
 
     let div4 = document.createElement('div');
-    div4.innerHTML = item.date;
+    div4.innerHTML = item.datetime;
     holder.appendChild(div4);
 }
 
@@ -610,12 +611,9 @@ document.addEventListener('click', function(event) {
     let profile_button = document.getElementById('profile_button');
     if (profile_info.style.display === "flex") {
         if (profile_info.contains(target))
-        // if (target === profile_info)
             return ;
-        // else if (target === profile_button)
-        //     return ;
         else
-            open_profile();
+            profile.open_profile();
     }
 }, true);
 
