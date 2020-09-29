@@ -28,7 +28,7 @@ function register_callback (xhttp) {
             document.getElementById('login_message').innerHTML = '';
             login_form_toggle();
             login();
-            check_session();
+            profile.check_session();
         }
         else
             document.getElementById('login_message').innerHTML =
@@ -83,28 +83,12 @@ function resend_confirmation() {
     });
 }
 
-function open_profile() {
-    let profile = document.getElementById('profile');
-    if (profile.style.display === '')
-    {
-        profile.style.display = 'flex';
-        sendJSON({'action': 'get_profile'}, (e) => {
-            fill_profile(e);
-        });
-    }
-    else {
-        profile.style.display = '';
-        document.getElementById('button_confirmation').innerHTML = 'Resend confirmation e-mail';
-    }
-    console.log('Open profile pressed');
-}
-
 function toggle_notify_callback(e) {
     if (e.readyState === 4 && e.status === 200)
     {
         let response = JSON.parse(e.response);
         if (response['status'] === 'OK')
-            open_profile();
+            profile.open_profile();
     }
 }
 
@@ -120,6 +104,7 @@ function logout() {
     sendJSON({"action": "logout"}, () => {location.reload()});
     console.log('OK - logout');
 }
+
 function login_form_toggle() {
     var login = document.getElementById('login_form');
     if (!display_login)
@@ -129,7 +114,7 @@ function login_form_toggle() {
     }
     else
     {
-        login.style.display = '';
+        login.style.removeProperty('display');
         display_login = false;
     }
 }
@@ -171,19 +156,23 @@ function snapshot() {
         canvas.width = 640;
         canvas.height = 480;
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        obj.data = canvas.toDataURL().split(',')[1];
+        let data = canvas.toDataURL();
+        obj.data = data.split(',')[1];
     }
     else {
         let file = document.getElementById('form_file').files[0];
         let reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = e => {
-            obj.data = e.target.result.split(',')[1];};
+        reader.onload = split_file(reader, obj);
     }
     sendJSON(obj, (e) => {
         if (e.readyState === 4 && e.status === 200)
             this.gallery.load_gallery();
     });
+}
+
+function split_file (reader, obj) {
+    obj.data = reader.result.split(',')[1];
 }
 
 function sendJSON(obj, callback) {
@@ -232,10 +221,12 @@ function toggle_like (event) {
 class Profile {
 
     constructor() {
-        this.login_form = document.getElementById('login_form_tmp');
-        this.login_button = document.getElementById('login_button_tmp');
-        this.profile_button = document.getElementById('profile_button_tmp');
-        this.logout_button = document.getElementById('logout_button_tmp');
+        this.profile_info = document.getElementById('profile');
+        this.login_form = document.getElementById('login_form');
+        this.login_button = document.getElementById('login_button');
+        this.profile_button = document.getElementById('profile_button');
+        this.logout_button = document.getElementById('logout_button');
+        this.login_message = document.getElementById('login_message');
 
         this.check_session();
     }
@@ -246,11 +237,11 @@ class Profile {
     }
 
     profile_icons_login() {
-        document.getElementById('login_button').style.display = 'none';
-        document.getElementById('profile_button').style.display = 'flex';
-        document.getElementById('logout_button').style.display = 'flex';
-        document.getElementById('login_form').style.display = 'none';
-        document.getElementById('login_message').innerHTML = '';
+        this.login_button.style.display = 'none';
+        this.profile_button.style.display = 'flex';
+        this.logout_button.style.display = 'flex';
+        this.login_form.style.display = 'none';
+        this.login_message.innerHTML = '';
     }
 
     profile_icons_logout() {
@@ -278,6 +269,22 @@ class Profile {
         }
     }
 
+    open_profile() {
+        let profile = document.getElementById('profile');
+        if (profile.style.display === "" || profile.style.display === "none")
+        {
+            profile.style.display = 'flex';
+            sendJSON({'action': 'get_profile'}, (e) => {
+                fill_profile(e);
+            });
+        }
+        else {
+            profile.style.display = 'none';
+            document.getElementById('button_confirmation').innerHTML = 'Resend confirmation e-mail';
+        }
+        console.log('Open profile pressed');
+    }
+
 }
 
 class Gallery {
@@ -295,7 +302,7 @@ class Gallery {
             this.gallery.remove();
         this.gallery = document.createElement('section');
         this.gallery.id = 'gallery';
-        document.getElementById('side').prepend(this.gallery);
+        document.getElementById('side').appendChild(this.gallery);
         sendJSON({'action': 'get_gallery', 'page' : this.page},
             (e) => this.load_gallery_callback(e));
     }
