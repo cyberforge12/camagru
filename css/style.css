@@ -165,8 +165,21 @@ button:disabled {
     font-style: oblique;
 }
 
-#main {
+#main_not_logged {
     display: flex;
+    flex-direction: column;
+    justify-items: center;
+    align-items: stretch;
+    width: 60%;
+    height: 100%;
+    align-self: center;
+    justify-content: center;
+    font-size: xx-large;
+    text-align: center;
+}
+
+#main {
+    display: none;
     flex-direction: column;
     justify-items: center;
     align-items: stretch;

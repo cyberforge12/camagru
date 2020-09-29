@@ -1,6 +1,6 @@
 <?php
 require_once('constants.php');
-include_once (ROOT_PATH . 'config/setup.php');
+include_once(ROOT_PATH . 'config/setup.php');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -16,7 +16,8 @@ include_once (ROOT_PATH . 'config/setup.php');
 			alt="Login"></button>
 	<button class="user" id="profile_button" onclick="open_profile()"
 			alt="Open profile"></button>
-	<button class="user" id="logout_button" onclick="logout()" alt="Logout"></button>
+	<button class="user" id="logout_button" onclick="logout()"
+			alt="Logout"></button>
 </header>
 <form id="login_form" action="">
 	Log in
@@ -29,9 +30,11 @@ include_once (ROOT_PATH . 'config/setup.php');
 		   placeholder="e-mail">
 	<div id="login_buttons">
 		<button type="button" onclick="register()" name="action"
-				value="reg">Register</button>
+				value="reg">Register
+		</button>
 		<button type="button" onclick="login()" name="action"
-				value="login">Login</button>
+				value="login">Login
+		</button>
 	</div>
 	<div id="login_message"></div>
 </form>
@@ -58,29 +61,35 @@ include_once (ROOT_PATH . 'config/setup.php');
 		confirmation e-mail</button>
 </section>
 <section class="content">
-<main class="main" id="main">
-	<div id="pics_header">Select an overlay image:</div>
-	<div id="pics">
-		<img id="discount"  src="img/discount.png" onclick="select_img(this)"
-			 alt="discount">
-		<img id="stars"  src="img/stars.png" onclick="select_img(this)"
-			 alt="stars">
-		<img id="think"  src="img/think.png" onclick="select_img(this)"
-			 alt="stars">
-		<img id="frame"  src="img/frame.png" onclick="select_img(this)"
-			 alt="frame">
-		<img id="none"  src="img/none.png" onclick="select_img(this)" alt="clear
+		<section id="main_not_logged">
+			<div>Please, log in</div>
+		</section>
+	<main class="main" id="main">
+			<div id="pics_header">Select an overlay image:</div>
+			<div id="pics">
+				<img id="discount" src="img/discount.png"
+					 onclick="select_img(this)"
+					 alt="discount">
+				<img id="stars" src="img/stars.png" onclick="select_img(this)"
+					 alt="stars">
+				<img id="think" src="img/think.png" onclick="select_img(this)"
+					 alt="stars">
+				<img id="frame" src="img/frame.png" onclick="select_img(this)"
+					 alt="frame">
+				<img id="none" src="img/none.png" onclick="select_img(this)"
+					 alt="clear
 		 img">
-	</div>
-	<div id="videoContainer" hidden>
-		<video id="cam" src="" autoplay poster="img/none.png"></video>
-	</div>
-	<form id="upload" enctype="multipart/form-data" action="">
-		<input type="hidden" name="cam" value="">
-		<input type="hidden" id="img_name" name="img_name" value="">
-		<input type="hidden" name="MAX_FILE_SIZE" value="3000000" />
-		<label for="form_file">Cam is not available. Upload a photo: </label>
-		<input id="form_file" name="form_file" placeholder="Choose
+			</div>
+		<div id="videoContainer" hidden>
+			<video id="cam" src="" autoplay poster="img/none.png"></video>
+		</div>
+		<form id="upload" enctype="multipart/form-data" action="">
+			<input type="hidden" name="cam" value="">
+			<input type="hidden" id="img_name" name="img_name" value="">
+			<input type="hidden" name="MAX_FILE_SIZE" value="3000000"/>
+			<label for="form_file">Cam is not available. Upload a
+				photo: </label>
+			<input id="form_file" name="form_file" placeholder="Choose
 			photo to upload..." type="file">
 	</form>
 	<button id="snapshot" onclick="snapshot()"

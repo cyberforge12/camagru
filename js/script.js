@@ -3,7 +3,6 @@ var localMediaStream = null;
 var selected_img = null;
 var display_login = false;
 var track = null;
-var track_settings = null;
 var video_ratio = null;
 var snapshot_button = document.getElementById('snapshot');
 
@@ -220,7 +219,9 @@ function toggle_like (event) {
 
 class Profile {
 
+
     constructor() {
+        this.login = undefined;
         this.profile_info = document.getElementById('profile');
         this.login_form = document.getElementById('login_form');
         this.login_button = document.getElementById('login_button');
@@ -257,6 +258,10 @@ class Profile {
             if (response['status'] === 'OK')
             {
                 this.profile_icons_login();
+                this.login = e.response['login'];
+                document.getElementById('main').style.display = 'flex';
+                document.getElementById('main_not_logged').style.display = 'none';
+                load_cam();
                 console.log('Login OK: ' + e.response);
             }
             else
@@ -617,19 +622,21 @@ document.addEventListener('click', function(event) {
     }
 }, true);
 
-navigator.mediaDevices.getUserMedia({video: true})
-    .then(function (stream) {
-        if (stream)
-        {
-            video.srcObject = stream;
-            localMediaStream = stream;
-            document.getElementById('videoContainer').style.display = 'flex';
-            track = localMediaStream.getTracks()[0];
-            track_settings = track.getSettings();
-            video_ratio = track_settings.width / track_settings.height;
-        }
-    })
-    .catch(function (reason) {
-        if (reason)
-            document.getElementById('upload').style.display = 'flex';
-    });
+function load_cam() {
+    navigator.mediaDevices.getUserMedia({video: true})
+        .then(function (stream) {
+            if (stream)
+            {
+                video.srcObject = stream;
+                localMediaStream = stream;
+                document.getElementById('videoContainer').style.display = 'flex';
+                track = localMediaStream.getTracks()[0];
+                let track_settings = track.getSettings();
+                video_ratio = track_settings.width / track_settings.height;
+            }
+        })
+        .catch(function (reason) {
+            if (reason)
+                document.getElementById('upload').style.display = 'flex';
+        });
+}

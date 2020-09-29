@@ -127,7 +127,7 @@ function login ($arr, $dbh) {
         return ['status' => 'ERROR_LOGIN', 'message' => 'Incorrect username or password'];
     elseif (!$token) {
         if (!update_session($login, $dbh))
-            return ['status' => 'OK', 'message' => 'Logged in'];
+            return ['status' => 'OK', 'message' => 'Logged in', 'login' => $login];
         else
             return ['status' => 'ERROR', 'message' => 'Database error'];
     }
