@@ -1,10 +1,16 @@
+html {
+    min-height: 100vh;
+    max-height: 100vh;
+}
+
 body {
     /*border: 3px solid red;*/
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 93vh;
-    max-height: 93vh;
+    box-sizing: border-box;
+    min-height: 100%;
+    max-height: 100%;
     width: 99%;
     font-family: Arial, sans-serif;
     font-size: 14px;
@@ -21,8 +27,25 @@ body {
 button {
     border: none;
     background-color: #595956;
-    height: 32px;
-    min-width: 32px;
+}
+
+button:hover {
+    background-color: green;
+}
+
+button:after {
+    background-color: yellow;
+}
+
+button:disabled {
+    color: red;
+}
+
+.text_button {
+    font-size: xx-large;
+    font-weight: bold;
+    margin: 10px;
+    text-align: center;
 }
 
 .header {
@@ -51,7 +74,7 @@ button {
     background-color: #3E3E3C;
 }
 
-.profile {
+#profile {
     padding: 5px;
     display: none;
     flex-direction: column;
@@ -71,7 +94,7 @@ button {
     height: 100%;
     cursor: pointer;
     filter: hue-rotate(180deg);
-    background-image: url("../img/login.svg");
+    background-image: url("/img/login.svg");
     background-repeat: no-repeat;
 }
 
@@ -80,7 +103,7 @@ button {
     height: 100%;
     cursor: pointer;
     filter: hue-rotate(180deg);
-    background-image: url("../img/profile.svg");
+    background-image: url("/img/profile.svg");
     background-repeat: no-repeat;
 }
 
@@ -89,7 +112,7 @@ button {
     height: 100%;
     cursor: pointer;
     filter: hue-rotate(180deg);
-    background-image: url("../img/logout.svg");
+    background-image: url("/img/logout.svg");
     background-repeat: no-repeat;
 }
 
@@ -245,13 +268,11 @@ button {
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
-    height: 10%;
 }
 
 .gallery_item_actions_holder > * {
     align-self: center;
     margin-right: 5px;
-    height: 100%;
 }
 
 .gallery_item_buttons {
@@ -262,15 +283,15 @@ button {
 }
 
 .delete_button {
-    background-image: url('../img/delete.png');
+    background-image: url('/img/delete.png');
 }
 
 .like_button {
-    background-image: url('../img/likes.png');
+    background-image: url('/img/likes.png');
 }
 
-.comment_button {
-    background-image: url('../img/comments.png');
+.comments_button {
+    background-image: url('/img/comments.png');
 }
 
 .comments_holder {
@@ -279,14 +300,18 @@ button {
 }
 
 .comment_form {
-    height: 5vh;
+    min-height: 10vh;
     border-color: #E8E9C9;
+    border-radius: 5px;
+    margin: 10px;
 }
 
-.comment_info > * {
-    flex-shrink: 1;
-    margin-right: 3px;
-    font-size: small;
+.comment {
+    border-radius: 5px;
+    background-color: #595956;
+    padding: 5px;
+    margin-top: 10px;
+    font-size: medium;
 }
 
 .footer {
