@@ -306,15 +306,15 @@ input:invalid {
 }
 
 .delete_button {
-    background-image: url('/img/delete.png');
+    background-image: url('../img/delete.png');
 }
 
 .like_button {
-    background-image: url('/img/likes.png');
+    background-image: url('../img/likes.png');
 }
 
 .comments_button {
-    background-image: url('/img/comments.png');
+    background-image: url('../img/comments.png');
 }
 
 .comments_holder {
