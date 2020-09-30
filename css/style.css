@@ -301,6 +301,8 @@ input:invalid {
     background-size: 100%;
     background-repeat: no-repeat;
     cursor: pointer;
+    min-height: 32px;
+    min-width: 32px;
 }
 
 .delete_button {
