@@ -18,45 +18,6 @@ function login() {
     console.log('Login button pressed');
 }
 
-function register_callback (xhttp) {
-    if (xhttp.readyState === 4 && xhttp.status === 200)
-    {
-        let response = JSON.parse(xhttp.response);
-        if (response['status'] === 'OK')
-        {
-            document.getElementById('login_message').innerHTML = '';
-            login_form_toggle();
-            login();
-            profile.check_session();
-        }
-        else
-            document.getElementById('login_message').innerHTML =
-                response['message'];
-    }
-}
-
-function register_send() {
-    let login = document.getElementById('login_username').value;
-    let passw = document.getElementById('login_passw').value;
-    let email = document.getElementById('login_email').value;
-    let obj = {};
-    obj.action = 'register';
-    obj.login = login;
-    obj.passw = passw;
-    obj.email = email;
-    sendJSON(obj, register_callback);
-    console.log("Register button pressed again");
-}
-
-function register() {
-    let email = document.getElementById('login_email');
-    if (email.style.display === '')
-        email.style.display = 'flex';
-    else
-        register_send();
-    console.log("Register button pressed");
-}
-
 function fill_profile (xhttp) {
     let response;
     if (xhttp.readyState === 4 && xhttp.status === 200) {
@@ -70,8 +31,8 @@ function fill_profile (xhttp) {
             document.getElementById('profile_email_conf').innerHTML = 'NO';
             document.getElementById('profile_email_conf').style.color = 'red';
         }
-        if (response.notify === true)
-            document.getElementById('profile_notify').checked;
+        if (response.notify === "1")
+            document.getElementById('profile_notify').checked = true;
     }
     console.log('Show profile');
 }
@@ -275,16 +236,16 @@ class Profile {
     }
 
     open_profile() {
-        let profile = document.getElementById('profile');
-        if (profile.style.display === "" || profile.style.display === "none")
+        if (this.profile_info.style.display === "" ||
+            this.profile_info.style.display === "none")
         {
-            profile.style.display = 'flex';
+            this.profile_info.style.display = 'flex';
             sendJSON({'action': 'get_profile'}, (e) => {
                 fill_profile(e);
             });
         }
         else {
-            profile.style.display = 'none';
+            this.profile_info.style.display = 'none';
             document.getElementById('button_confirmation').innerHTML = 'Resend confirmation e-mail';
         }
         console.log('Open profile pressed');

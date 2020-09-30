@@ -29,7 +29,7 @@ include_once(ROOT_PATH . 'config/setup.php');
 	<input id="login_email" type="email" required autofocus name="email"
 		   placeholder="e-mail">
 	<div id="login_buttons">
-		<button type="button" onclick="register()" name="action"
+		<button type="button" onclick="profile.register()" name="action"
 				value="reg">Register
 		</button>
 		<button type="button" onclick="login()" name="action"
