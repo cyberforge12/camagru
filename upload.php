@@ -154,12 +154,28 @@ function check_user(string $login, PDO $dbh) {
         return -1;
 }
 
-function send_confirmation(string $email, PDO $dbh) {
+function check_email(string $login, string $email, PDO $dbh) {
+    $query = 'SELECT email FROM User WHERE user = ?';
+    $sth = $dbh->prepare($query);
+    $sth->bindValue(1, $login, PDO::PARAM_STR);
+    if ($sth->execute()) {
+        $data = $sth->fetch();
+        if ($data and $data[0] === $email)
+            return 1;
+        else
+            return 0;
+    }
+    else
+        return -1;
+}
+
+function send_confirmation(string $login, string $email, PDO $dbh) {
     $link = time();
-    $request = 'INSERT INTO EmailConfirmation VALUES (?, ?)';
+    $request = "INSERT INTO EmailConfirmation VALUES (?, ?, ?, 'conf')";
     $sth = $dbh->prepare($request);
-    $sth->bindValue(1, $email, PDO::PARAM_STR);
-    $sth->bindValue(2, $link, PDO::PARAM_STR);
+    $sth->bindValue(1, $login, PDO::PARAM_STR);
+    $sth->bindValue(2, $email, PDO::PARAM_STR);
+    $sth->bindValue(3, $link, PDO::PARAM_STR);
     if ($sth->execute())
         return mail($email, 'Camagru e-mail confirmation',
         'Please follow the link below to confirm your e-mail:' . PHP_EOL
@@ -183,7 +199,7 @@ function register ($arr, $dbh) {
         $sth->bindValue(3, hash('whirlpool', $arr->passw), PDO::PARAM_STR);
         if ($sth->execute())
         {
-            if (send_confirmation($arr->login, $dbh))
+            if (send_confirmation($arr->login, $arr->email, $dbh))
                 return ['status' => 'OK', 'message' => 'message sent'];
             else
                 return ['status' => 'ERROR', 'message' => 'Mail error'];
@@ -203,7 +219,7 @@ function resend_confirmation(PDO $dbh) {
         {
             if (!empty(($email = $sth->fetch())))
             {
-                if (!send_confirmation($email[0], $dbh))
+                if (!send_confirmation($user, $email[0], $dbh))
                     return ['status' => 'OK', 'message' => 'Confirmation letter sent'];
                 else
                     return ['status' => 'ERROR', 'message' => 'Mail error'];
@@ -360,6 +376,29 @@ function notify ($arr, PDO $dbh) {
 
 }
 
+function reset_password ($arr, PDO $dbh) {
+    $link = hash('whirlpool', time());
+    $email = $arr->email;
+    $request = "INSERT INTO EmailConfirmation VALUES (?, ?, ?, 'reset')";
+    $sth = $dbh->prepare($request);
+    $sth->bindValue(1, $arr->login, PDO::PARAM_STR);
+    $sth->bindValue(2, $email, PDO::PARAM_STR);
+    $sth->bindValue(3, $link, PDO::PARAM_STR);
+    if ($sth->execute()) {
+        if (check_email($arr->login, $email, $dbh)) {
+            mail($email, 'Camagru password reset',
+                'Please follow the link below to reset your password:' . PHP_EOL
+                . $_SERVER['HTTP_HOST'] . '/reset.php?link=' . $link);
+            return ['status' => 'OK', 'message' => 'E-mail with password reset instructions was sent to ' .
+                $email];
+        }
+        else
+            return ['status' => 'Error', 'message' => 'Incorrect login or e-mail'];
+    }
+    else
+        return ['status' => 'Error', 'message' => 'Incorrect login or e-mail'];
+}
+
 $json = file_get_contents("php://input");
 $arr = json_decode($json);
 $ret = '';
@@ -395,6 +434,8 @@ if (isset($dbh))
         $ret = add_comment($arr, $dbh);
     elseif ($arr->action === 'notify')
         $ret = notify($arr, $dbh);
+    elseif ($arr->action === 'reset')
+        $ret = reset_password($arr, $dbh);
     else
         $ret = ['status' => 'ERROR', 'message' => 'Illegal action'];
 }

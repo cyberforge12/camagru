@@ -170,13 +170,17 @@ class Profile {
 
 
     constructor() {
-        this.login = undefined;
+        this.login_name = undefined;
+        this.login_input = document.getElementById('login_username');
         this.profile_info = document.getElementById('profile');
         this.login_form = document.getElementById('login_form');
         this.login_button = document.getElementById('login_button');
         this.profile_button = document.getElementById('profile_button');
         this.logout_button = document.getElementById('logout_button');
         this.login_message = document.getElementById('login_message');
+        this.reset_button = document.getElementById('reset_button')
+        this.email = document.getElementById('login_email');
+        this.passw = document.getElementById('login_passw');
 
         this.check_session();
     }
@@ -253,6 +257,66 @@ class Profile {
         console.log('Open profile pressed');
     }
 
+    reset_password_callback(e) {
+        if (e.readyState === 4 && e.status === 200)
+        {
+            let message = document.getElementById('login_message');
+            let response = JSON.parse(e.response);
+            if (response['status'] === 'OK')
+                message.style.color = 'green';
+            else
+                message.style.color = 'red';
+            message.innerHTML = response['message'];
+        }
+        console.log(e);
+    }
+
+    reset_password() {
+        this.login_input.style.display = 'flex';
+        this.email.style.display = 'flex';
+        this.passw.style.display = 'none';
+        if (this.login_input.validity.valid && this.email.validity.valid) {
+            sendJSON({action: 'reset',
+                    login: this.login_input.value,
+                    email: this.email.value},
+                (e) => this.reset_password_callback(e));
+        }
+        console.log("Reset button pressed");
+    }
+
+    register_callback (e) {
+        if (e.readyState === 4 && e.status === 200)
+        {
+            let response = JSON.parse(e.response);
+            if (response['status'] === 'OK')
+            {
+                this.login_message.innerHTML = "";
+                login_form_toggle();
+                profile.login();
+                profile.check_session();
+            }
+            else
+                this.login_message.innerHTML = response['message'];
+        }
+    }
+
+    register_send() {
+        sendJSON({action: "register",
+            login: this.login_input.value,
+            email: this.email.value,
+            passw: this.passw.value}, (e) => this.register_callback(e));
+        console.log("Register button pressed again");
+    }
+
+    register() {
+        this.login_input.style.display = 'flex';
+        this.passw.style.display = 'flex';
+        this.email.style.display = 'flex';
+        if (this.login_input.validity.valid && this.passw.validity.valid &&
+                this.email.validity.valid)
+            this.register_send();
+        console.log("Register button pressed");
+    }
 }
 
 class Gallery {

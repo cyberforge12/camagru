@@ -41,6 +41,14 @@ button:disabled {
     color: red;
 }
 
+input:valid {
+    border: 1px solid green;
+}
+
+input:invalid {
+    border: 1px solid red;
+}
+
 .text_button {
     font-size: xx-large;
     font-weight: bold;

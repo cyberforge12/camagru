@@ -113,8 +113,10 @@ try {
         date,
         session_user REFERENCES User(user))');
     $dbh->exec('create table if not exists EmailConfirmation(
+        user REFERENCES  User(user),
         email,
-        id)');
+        id,
+        type)');
 } catch (PDOException $e) {
     echo 'Подключение не удалось: ' . $e->getMessage(); //TODO: REMOVE
 }

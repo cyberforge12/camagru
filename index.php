@@ -1,6 +1,6 @@
 <?php
 require_once('constants.php');
-include_once(ROOT_PATH . 'config/setup.php');
+require_once('config/setup.php');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -24,16 +24,20 @@ include_once(ROOT_PATH . 'config/setup.php');
 	<hr>
 	<input id="login_username" type="text" required autofocus name="username"
 		   placeholder="username">
-	<input id="login_passw" type="password" required name="passw"
-		   placeholder="password">
+	<input id="login_passw" type="password" required name="passw" minlength="3"
+		   placeholder="Password (min 3 characters)">
 	<input id="login_email" type="email" required autofocus name="email"
 		   placeholder="e-mail">
 	<div id="login_buttons">
 		<button type="button" onclick="profile.register()" name="action"
 				value="reg">Register
-		</button>
-		<button type="button" onclick="login()" name="action"
+		<button type="button" onclick="profile.login()" name="action"
 				value="login">Login
+		</button>
+		<button type="button" id="reset_button" onclick="profile
+		.reset_password()"
+				name="reset_password"
+			value="">Reset password</button>
 		</button>
 	</div>
 	<div id="login_message"></div>
