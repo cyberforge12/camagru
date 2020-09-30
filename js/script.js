@@ -6,25 +6,6 @@ var track = null;
 var video_ratio = null;
 var snapshot_button = document.getElementById('snapshot');
 
-function fill_profile (xhttp) {
-    let response;
-    if (xhttp.readyState === 4 && xhttp.status === 200) {
-        response = JSON.parse(xhttp.response);
-        document.getElementById('profile_username').innerHTML = response.login;
-        document.getElementById('profile_email').innerHTML = response.email;
-        if (response.is_confirmed === '1') {
-            document.getElementById('profile_email_conf').innerHTML = 'YES';
-            document.getElementById('profile_email_conf').style.color = 'green';
-        } else {
-            document.getElementById('profile_email_conf').innerHTML = 'NO';
-            document.getElementById('profile_email_conf').style.color = 'red';
-        }
-        if (response.notify === "1")
-            document.getElementById('profile_notify').checked = true;
-    }
-    console.log('Show profile');
-}
-
 function resend_confirmation() {
     sendJSON({"action": "resend"}, () => {
         document.getElementById('button_confirmation').innerHTML = 'Confirmation sent';
@@ -241,13 +222,33 @@ class Profile {
         }
     }
 
+    open_profile_callback (e) {
+        if (e.readyState === 4 && e.status === 200) {
+            let response;
+            response = JSON.parse(e.response);
+            document.getElementById('profile_username').innerHTML = response.login;
+            document.getElementById('profile_email').innerHTML = response.email;
+            if (response.is_confirmed === '1') {
+                document.getElementById('profile_email_conf').innerHTML = 'YES';
+                document.getElementById('profile_email_conf').style.color = 'green';
+            } else {
+                document.getElementById('profile_email_conf').innerHTML = 'NO';
+                document.getElementById('profile_email_conf').style.color = 'red';
+            }
+            if (response.notify === "1")
+                document.getElementById('profile_notify').checked = true;
+        }
+        console.log('Show profile');
+    }
+
+
     open_profile() {
         if (this.profile_info.style.display === "" ||
             this.profile_info.style.display === "none")
         {
             this.profile_info.style.display = 'flex';
             sendJSON({'action': 'get_profile'}, (e) => {
-                fill_profile(e);
+                this.open_profile_callback(e);
             });
         }
         else {

@@ -238,7 +238,7 @@ function get_profile(PDO $dbh) {
     $user = get_session_user($dbh);
     if (!empty($user))
     {
-        $sth = $dbh->prepare('SELECT user, email,
+        $sth = $dbh->prepare('SELECT user as login, email,
             is_confirmed, notify FROM User WHERE user = ?');
         $sth->bindValue(1, $user, PDO::PARAM_STR);
         if ($sth->execute())
