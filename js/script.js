@@ -6,18 +6,6 @@ var track = null;
 var video_ratio = null;
 var snapshot_button = document.getElementById('snapshot');
 
-function login() {
-    let login = document.getElementById('login_username').value;
-    let passw = document.getElementById('login_passw').value;
-    let obj = {};
-    obj.action = 'login';
-    obj.login = login;
-    obj.passw = passw;
-    sendJSON(obj, (e) => profile.toggle_profile_icons(e));
-    profile.check_session();
-    console.log('Login button pressed');
-}
-
 function fill_profile (xhttp) {
     let response;
     if (xhttp.readyState === 4 && xhttp.status === 200) {
@@ -193,6 +181,20 @@ class Profile {
         this.check_session();
     }
 
+    login() {
+        this.login_input.style.display = 'flex';
+        this.passw.style.display = 'flex';
+        this.email.style.display = 'none';
+        if (this.login_input.validity.valid && this.passw.validity.valid) {
+            sendJSON({action: 'login',
+                    login: this.login_input.value,
+                    passw: this.passw.value},
+                (e) => profile.toggle_profile_icons(e));
+            profile.check_session();
+        }
+        console.log('Login button pressed');
+    }
+
     check_session () {
         sendJSON({action: "check_session"}, (e) => this.toggle_profile_icons(e));
         console.log('Check_session called');
@@ -219,7 +221,7 @@ class Profile {
             if (response['status'] === 'OK')
             {
                 this.profile_icons_login();
-                this.login = e.response['login'];
+                this.login_name = e.response['login'];
                 document.getElementById('main').style.display = 'flex';
                 document.getElementById('main_not_logged').style.display = 'none';
                 load_cam();
