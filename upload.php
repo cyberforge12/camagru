@@ -61,7 +61,7 @@ function create_img($arr) {
 
 function get_session_user (PDO $dbh) {
     $request = 'SELECT session_user FROM
-        (SELECT *, max(date) FROM Session GROUP BY session_id)
+        (SELECT *, max(datetime) FROM Session GROUP BY session_id)
         WHERE session_id = ?';
     $sth = $dbh->prepare($request);
     $sth->bindValue(1, session_id(), PDO::PARAM_STR);
@@ -79,7 +79,7 @@ function process_image($arr, PDO $dbh) {
     ob_end_clean();
     header('Content-Type: application/json');
     echo json_encode(['status' => 'OK']);
-    $query = 'INSERT INTO Photo (date, photo, user, is_deleted)
+    $query = 'INSERT INTO Photo (datetime, photo, user, is_deleted)
         VALUES (current_timestamp, ?, ?, 0)';
     $sth = $dbh->prepare($query);
     $sth->bindValue(1, base64_encode($image_data), PDO::PARAM_STR);
@@ -192,7 +192,7 @@ function register ($arr, $dbh) {
     else if ($check === -1)
         return ['status' => 'ERROR', 'message' => 'Database error'];
     else {
-        $query = 'INSERT INTO User VALUES (?, ?, ?, false, false)';
+        $query = 'INSERT INTO User VALUES (?, ?, ?, false, true)';
         $sth = $dbh->prepare($query);
         $sth->bindValue(1, $arr->login, PDO::PARAM_STR);
         $sth->bindValue(2, $arr->email, PDO::PARAM_STR);
@@ -256,7 +256,7 @@ function get_profile(PDO $dbh) {
 }
 
 function load_gallery(PDO $dbh) {
-    $request = 'SELECT date, photo, user FROM Photo';
+    $request = 'SELECT datetime, photo, user FROM Photo';
     $sth = $dbh->prepare($request);
     $sth->execute();
     return $sth;
@@ -269,9 +269,9 @@ function get_gallery($arr, PDO $dbh) {
     $user = get_session_user($dbh);
     $limit = 10;
     $page = ( isset ( $arr->page ) ) ? $arr->page : 1;
-    $query = "SELECT photo_id, date, photo, user FROM Photo
+    $query = "SELECT photo_id, datetime, photo, user FROM Photo
             WHERE is_deleted = 0
-            ORDER BY date DESC";
+            ORDER BY datetime DESC";
     $Paginator = new Paginator( $dbh, $query, $user );
     $results = $Paginator->getData( $limit, $page );
     return $results;
@@ -286,11 +286,17 @@ function check_session(PDO $dbh) {
 }
 
 function get_comments ($arr, PDO $dbh) {
-    $query = 'SELECT text FROM Comment WHERE photo = ?';
+    $query = 'SELECT text, datetime, user FROM Comment WHERE photo = ?';
     $sth = $dbh->prepare($query);
-    $sth->bindValue(1, $arr['id']);
+    $sth->bindValue(1, $arr->id);
     $sth->execute();
-    $ret = $sth->fetchAll();
+    $ret = [];
+    if ($ret['comments'] = $sth->fetchAll(PDO::FETCH_ASSOC))
+        $ret['status'] = "OK";
+    else {
+        $ret['status'] = "Error";
+        $ret['message'] = "Empty comments";
+    }
     return $ret;
 }
 
@@ -369,10 +375,11 @@ function notify ($arr, PDO $dbh) {
         $sth->bindValue(1, $arr->value);
         $sth->bindValue(2, $user);
         if ($sth->execute())
-            return ['status' => 'OK', 'message' => 'Notification settings changed',
-                'id' => $arr->id];
+            return ['status' => 'OK', 'message' => 'Notification settings changed'];
+        else
+            return ['status' => 'ERROR', 'message' => 'Database error'];
     }
-    return ['status' => 'ERROR', 'message' => 'Comment not recorded. Please log in.', 'id' => $arr->id];
+    return ['status' => 'ERROR', 'message' => 'Invalid user session.'];
 
 }
 
@@ -399,6 +406,49 @@ function reset_password ($arr, PDO $dbh) {
         return ['status' => 'Error', 'message' => 'Incorrect login or e-mail'];
 }
 
+function change_login ($arr, PDO $dbh) {
+    if (!check_user($arr->login, $dbh))
+    {
+        $user = get_session_user($dbh);
+        $request = "UPDATE User SET user = ? WHERE user = ?";
+        $sth = $dbh->prepare($request);
+        $sth->bindValue(1, $arr->login, PDO::PARAM_STR);
+        $sth->bindValue(2, $user, PDO::PARAM_STR);
+        if ($sth->execute()) {
+            update_session($arr->login, $dbh);
+            return ['status' => 'OK', 'message' => 'Login changed'];
+        }
+        else
+            return ['status' => 'Error', 'message' => 'Database error'];
+    }
+    else
+        return ['status' => 'Error', 'message' => 'User already exists'];
+}
+
+function change_email ($arr, PDO $dbh) {
+    $user = get_session_user($dbh);
+    $request = "UPDATE User SET email = ? WHERE user = ?";
+    $sth = $dbh->prepare($request);
+    $sth->bindValue(1, $arr->email, PDO::PARAM_STR);
+    $sth->bindValue(2, $user, PDO::PARAM_STR);
+    if ($sth->execute())
+        return ['status' => 'OK', 'message' => 'E-mail changed'];
+    else
+        return ['status' => 'Error', 'message' => 'Database error'];
+}
+
+function change_passw ($arr, PDO $dbh) {
+    $user = get_session_user($dbh);
+    $request = "UPDATE User SET password = ? WHERE user = ?";
+    $sth = $dbh->prepare($request);
+    $sth->bindValue(1, hash('whirlpool', $arr->passw), PDO::PARAM_STR);
+    $sth->bindValue(2, $user, PDO::PARAM_STR);
+    if ($sth->execute())
+        return ['status' => 'OK', 'message' => 'Password changed'];
+    else
+        return ['status' => 'Error', 'message' => 'Database error'];
+}
+
 $json = file_get_contents("php://input");
 $arr = json_decode($json);
 $ret = '';
@@ -422,7 +472,7 @@ if (isset($dbh))
         $ret = resend_confirmation($dbh);
     elseif ($arr->action === 'get_gallery')
         $ret = get_gallery($arr, $dbh);
-    elseif ($arr->action === 'comment')
+    elseif ($arr->action === 'get_comments')
         $ret = get_comments($arr, $dbh);
     elseif ($arr->action === 'delete')
         $ret = delete_photo($arr, $dbh);
@@ -436,6 +486,12 @@ if (isset($dbh))
         $ret = notify($arr, $dbh);
     elseif ($arr->action === 'reset')
         $ret = reset_password($arr, $dbh);
+    elseif ($arr->action === 'change_login')
+        $ret = change_login($arr, $dbh);
+    elseif ($arr->action === 'change_email')
+        $ret = change_email($arr, $dbh);
+    elseif ($arr->action === 'change_passw')
+        $ret = change_passw($arr, $dbh);
     else
         $ret = ['status' => 'ERROR', 'message' => 'Illegal action'];
 }

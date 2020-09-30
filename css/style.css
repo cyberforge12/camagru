@@ -27,6 +27,7 @@ body {
 button {
     border: none;
     background-color: #595956;
+    margin: 5px;
 }
 
 button:hover {
@@ -160,6 +161,18 @@ input:invalid {
 
 #login_message {
     color: red;
+}
+
+#new_login_form {
+    display: none;
+}
+
+#new_email_form {
+    display: none;
+}
+
+#new_passw_form {
+    display: none;
 }
 
 .content {

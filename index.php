@@ -14,7 +14,7 @@ require_once('config/setup.php');
 	<div id="header_text">CAMAGRU</div>
 	<button class="user" id="login_button" onclick="login_form_toggle(this)"
 			alt="Login"></button>
-	<button class="user" id="profile_button" onclick="open_profile()"
+	<button class="user" id="profile_button" onclick="profile.open_profile()"
 			alt="Open profile"></button>
 	<button class="user" id="logout_button" onclick="logout()"
 			alt="Logout"></button>
@@ -47,22 +47,46 @@ require_once('config/setup.php');
 	<hr id="hr">
 	<div>
 		<label for="profile_username">Login:</label>
-		<section id="profile_username"></section>
+		<span id="profile_username"></span>
+		<button id="edit_login_button" onclick="profile.show_new_login()">Edit</button>
+	</div>
+	<div id="new_login_form">
+		<input id="new_login_input" placeholder="Enter new login">
+		<button id="send_new_login" onclick="profile.change_login()
+">Send</button>
 	</div>
 	<div>
 		<label for="profile_email">E-mail:</label>
-		<section id="profile_email"></section>
+		<span id="profile_email"></span>
+		<button id="edit_email_button" onclick="profile.show_new_email()
+">Edit</button>
+	</div>
+	<div id="new_email_form">
+		<input id="new_email_input" type="email" placeholder="Enter new email">
+		<button id="send_new_email" onclick="profile.change_email()
+">Send</button>
 	</div>
 	<div>
 		<label for="profile_email_conf">E-mail confirmed?</label>
-		<section id="profile_email_conf"></section>
+		<span id="profile_email_conf"></span>
 	</div>
 	<div>
 		<label for="profile_notify">Notify on updates to your photos?</label>
-		<input id="profile_notify" type="checkbox">
+		<input id="profile_notify" type="checkbox"
+			   onchange="profile.toggle_notify()">
 	</div>
-	<button id="button_confirmation" onclick="resend_confirmation()">Resend
-		confirmation e-mail</button>
+	<div id="new_passw_form">
+		<input id="new_passw_input" type="password" placeholder="Enter new
+		password">
+		<button id="send_new_passw" onclick="profile.change_passw()
+">Send</button>
+	</div>
+	<button id="change_passw" onclick="profile.show_new_passw()">Change password</button>
+	<button id="button_confirmation" onclick="resend_confirmation()
+">Resend
+		confirmation e-mail
+	</button>
+	<div id="profile_message"></div>
 </section>
 <section class="content">
 		<section id="main_not_logged">
@@ -95,12 +119,13 @@ require_once('config/setup.php');
 				photo: </label>
 			<input id="form_file" name="form_file" placeholder="Choose
 			photo to upload..." type="file">
-	</form>
-	<button id="snapshot" onclick="snapshot()"
-			disabled title="Select as overlay image above">SEND</button>
-</main>
-<section class="side" id="side">
-</section>
+		</form>
+		<button class="text_button" id="snapshot" onclick="snapshot()"
+				disabled title="Select as overlay image above">SEND
+		</button>
+	</main>
+	<section class="side" id="side">
+	</section>
 
 </section>
 <footer class="footer">&copy;Чистяков П. В., 2020</footer>

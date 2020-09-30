@@ -12,23 +12,6 @@ function resend_confirmation() {
     });
 }
 
-function toggle_notify_callback(e) {
-    if (e.readyState === 4 && e.status === 200)
-    {
-        let response = JSON.parse(e.response);
-        if (response['status'] === 'OK')
-            profile.open_profile();
-    }
-}
-
-function toggle_notify() {
-    let checkbox = document.getElementById('profile_notify');
-    if (checkbox.checked)
-        sendJSON({action: 'notify', value: 1}, toggle_notify_callback)
-    else
-        sendJSON({action: 'notify', value: 0}, toggle_notify_callback)
-}
-
 function logout() {
     sendJSON({"action": "logout"}, () => {location.reload()});
     console.log('OK - logout');
@@ -159,6 +142,7 @@ class Profile {
         this.profile_button = document.getElementById('profile_button');
         this.logout_button = document.getElementById('logout_button');
         this.login_message = document.getElementById('login_message');
+        this.profile_message = document.getElementById('profile_message');
         this.reset_button = document.getElementById('reset_button')
         this.email = document.getElementById('login_email');
         this.passw = document.getElementById('login_passw');
@@ -318,6 +302,113 @@ class Profile {
             this.register_send();
         console.log("Register button pressed");
     }
+
+    change_login_callback(e) {
+        if (e.readyState === 4 && e.status === 200)
+        {
+            let response = JSON.parse(e.response);
+            if (response['status'] === 'OK') {
+                this.profile_message.style.color = 'green';
+                document.getElementById("new_login_form").style.display = "none";
+            }
+            else
+                this.profile_message.style.color = 'red';
+            this.profile_message.innerHTML = response['message'];
+            setTimeout(() => {this.profile_message.innerHTML = "";},
+                4 * 1000);
+        }
+        console.log(e);
+    }
+
+    change_login() {
+        sendJSON({action: "change_login",
+        login: document.getElementById('new_login_input').value},
+            (e) => this.change_login_callback(e));
+    }
+
+    show_new_login() {
+        document.getElementById("new_login_form").style.display = 'flex';
+    }
+
+    change_email_callback(e) {
+        if (e.readyState === 4 && e.status === 200)
+        {
+            let response = JSON.parse(e.response);
+            if (response['status'] === 'OK') {
+                this.profile_message.style.color = 'green';
+                document.getElementById("new_email_form").style.display = "none";
+            }
+            else
+                this.profile_message.style.color = 'red';
+            this.profile_message.innerHTML = response['message'];
+            setTimeout(() => {this.profile_message.innerHTML = "";},
+                4 * 1000);
+        }
+        console.log(e);
+    }
+
+    change_email() {
+        sendJSON({action: "change_email",
+                email: document.getElementById('new_email_input').value},
+            (e) => this.change_email_callback(e));
+
+    }
+
+    show_new_email() {
+        document.getElementById("new_email_form").style.display = 'flex';
+    }
+
+    toggle_notify_callback(e) {
+        if (e.readyState === 4 && e.status === 200)
+        {
+            let response = JSON.parse(e.response);
+            if (response['status'] === 'OK')
+                this.profile_message.style.color = 'green';
+            else
+                this.profile_message.style.color = 'red';
+            this.profile_message.innerHTML = response['message'];
+            setTimeout(() => {this.profile_message.innerHTML = "";},
+                4 * 1000);
+        }
+        console.log(e);
+    }
+
+    toggle_notify() {
+        let checkbox = document.getElementById('profile_notify');
+        if (checkbox.checked)
+            sendJSON({action: 'notify', value: 1}, (e) => this.toggle_notify_callback(e));
+        else
+            sendJSON({action: 'notify', value: 0}, (e) => this.toggle_notify_callback(e));
+    }
+
+    change_passw_callback(e) {
+        if (e.readyState === 4 && e.status === 200)
+        {
+            let response = JSON.parse(e.response);
+            if (response['status'] === 'OK') {
+                this.profile_message.style.color = 'green';
+                document.getElementById("new_passw_form").style.display = "none";
+            }
+            else
+                this.profile_message.style.color = 'red';
+            this.profile_message.innerHTML = response['message'];
+            setTimeout(() => {this.profile_message.innerHTML = "";},
+                4 * 1000);
+        }
+        console.log(e);
+    }
+
+    change_passw() {
+        sendJSON({action: "change_passw",
+                passw: document.getElementById('new_passw_input').value},
+            (e) => this.change_passw_callback(e));
+
+    }
+
+    show_new_passw() {
+        document.getElementById("new_passw_form").style.display = 'flex';
+    }
+
 }
 
 class Gallery {
