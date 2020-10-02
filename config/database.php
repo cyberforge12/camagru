@@ -92,7 +92,7 @@ try {
         notify integer)');
     $dbh->exec('create table if not exists Photo(
         photo_id integer primary key autoincrement,
-        date timestamp DEAFULT CURRENT_TIMESTAMP,
+        datetime timestamp DEAFULT CURRENT_TIMESTAMP,
         photo,
         user,
         is_deleted,
@@ -101,24 +101,24 @@ try {
         id integer primary key,
         datetime default CURRENT_TIMESTAMP, 
         text,
-        user REFERENCES User(user),
-        photo REFERENCES Photo(photo_id))');
+        user REFERENCES User(user) ON UPDATE CASCADE ON DELETE CASCADE,
+        photo REFERENCES Photo(photo_id) ON UPDATE CASCADE ON DELETE CASCADE)');
     $dbh->exec('create table if not exists Like(
         id integer primary key,
-        user REFERENCES User(user),
-        photo REFERENCES Photo(photo_id),
+        user REFERENCES User(user) ON UPDATE CASCADE ON DELETE CASCADE,
+        photo REFERENCES Photo(photo_id) ON UPDATE CASCADE ON DELETE CASCADE,
         like)');
     $dbh->exec('create table if not exists Session(
         session_id VARCHAR(32),
-        date,
-        session_user REFERENCES User(user))');
+        datetime,
+        session_user REFERENCES User(user) ON UPDATE CASCADE ON DELETE CASCADE)');
     $dbh->exec('create table if not exists EmailConfirmation(
-        user REFERENCES  User(user),
+        user REFERENCES  User(user) ON UPDATE CASCADE ON DELETE CASCADE,
         email,
         id,
         type)');
 } catch (PDOException $e) {
-    echo 'Подключение не удалось: ' . $e->getMessage(); //TODO: REMOVE
+    echo 'Подключение не удалось: ' . $e->getMessage();
 }
 
 

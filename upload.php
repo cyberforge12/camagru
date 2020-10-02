@@ -359,14 +359,16 @@ function add_comment ($arr, PDO $dbh) {
         $sth->bindValue(1, $arr->data);
         $sth->bindValue(2, $user);
         $sth->bindValue(3, $arr->id);
-        if ($sth->execute())
+        if ($sth->execute()) {
+            send_notification($user, $arr->id, $dbh);
             return ['status' => 'OK', 'message' => 'Comment recorded',
                 'id' => $arr->id];
+        }
     }
     return ['status' => 'ERROR', 'message' => 'Comment not recorded. Please log in.', 'id' => $arr->id];
 }
 
-function notify ($arr, PDO $dbh) {
+function set_notifications ($arr, PDO $dbh) {
     $user = get_session_user($dbh);
     if ($user)
     {
@@ -381,6 +383,18 @@ function notify ($arr, PDO $dbh) {
     }
     return ['status' => 'ERROR', 'message' => 'Invalid user session.'];
 
+}
+
+function send_notification ($user, $photo_id, PDO $dbh) {
+    $request = "SELECT email FROM User WHERE user = (SELECT user FROM Photo WHERE photo_id = ?)";
+    $sth = $dbh->prepare($request);
+    $sth->bindValue(1, $photo_id);
+    if ($sth->execute()) {
+        $email = $sth->fetch()[0];
+        return mail($email, 'Camagru - ' . $user . ' commented your photo',
+            $user . ' posted a comment to your photo on Camagru website (http://' .
+            $_SERVER['HTTP_HOST'] . ').');
+    }
 }
 
 function reset_password ($arr, PDO $dbh) {
@@ -483,7 +497,7 @@ if (isset($dbh))
     elseif ($arr->action === 'add_comment')
         $ret = add_comment($arr, $dbh);
     elseif ($arr->action === 'notify')
-        $ret = notify($arr, $dbh);
+        $ret = set_notifications($arr, $dbh);
     elseif ($arr->action === 'reset')
         $ret = reset_password($arr, $dbh);
     elseif ($arr->action === 'change_login')
