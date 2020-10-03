@@ -43,12 +43,8 @@ class Paginator
     }
 
     private function userLikes($rowid) {
-        $query = 'SELECT user FROM Like
-            WHERE user = (
-                SELECT user FROM User
-                WHERE user = ?)
-              AND photo = ?';
-        $sth = $this->_dbh->query($query);
+        $query = 'SELECT user FROM Like WHERE (user = ? and photo = ? and like = 1)';
+        $sth = $this->_dbh->prepare($query);
         $sth->bindValue(1, $this->_user, PDO::PARAM_STR);
         $sth->bindValue(2, $rowid, PDO::PARAM_INT);
         if ($sth->execute()) {

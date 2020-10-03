@@ -13,41 +13,34 @@ function resend_confirmation() {
 }
 
 function logout() {
-    sendJSON({"action": "logout"}, () => {location.reload()});
+    sendJSON({"action": "logout"}, () => {
+        location.reload()
+    });
     console.log('OK - logout');
 }
 
 function login_form_toggle() {
     var login = document.getElementById('login_form');
-    if (!display_login)
-    {
+    if (!display_login) {
         login.style.display = 'flex';
         display_login = true;
-    }
-    else
-    {
+    } else {
         login.style.removeProperty('display');
         display_login = false;
     }
 }
 
 function select_img(item) {
-    if (selected_img)
-    {
-        if (selected_img === item)
-        {
+    if (selected_img) {
+        if (selected_img === item) {
             selected_img.style.border = '';
             selected_img = null;
-        }
-        else
-        {
+        } else {
             item.style.border = '3px solid red';
             selected_img.style.border = '';
             selected_img = item;
         }
-    }
-    else
-    {
+    } else {
         item.style.border = '3px solid red';
         selected_img = item;
     }
@@ -70,8 +63,7 @@ function snapshot() {
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         let data = canvas.toDataURL();
         obj.data = data.split(',')[1];
-    }
-    else {
+    } else {
         let file = document.getElementById('form_file').files[0];
         let reader = new FileReader();
         reader.readAsDataURL(file);
@@ -83,18 +75,19 @@ function snapshot() {
     });
 }
 
-function split_file (reader, obj) {
+function split_file(reader, obj) {
     obj.data = reader.result.split(',')[1];
 }
 
 function sendJSON(obj, callback) {
     if (typeof obj !== "object")
         console.log('Can\'t send non-object');
-    else
-    {
+    else {
         var request = JSON.stringify(obj);
         var xhhtp = new XMLHttpRequest();
-        xhhtp.onreadystatechange = function () { callback(xhhtp) };
+        xhhtp.onreadystatechange = function () {
+            callback(xhhtp)
+        };
         xhhtp.open('POST', 'upload.php', true);
         xhhtp.setRequestHeader('Content-Type', "application/json");
         xhhtp.send(request);
@@ -105,26 +98,49 @@ function sendJSON(obj, callback) {
 function find_label(el) {
     var idVal = el.id;
     labels = document.getElementsByTagName('label');
-    for( var i = 0; i < labels.length; i++ ) {
+    for (var i = 0; i < labels.length; i++) {
         if (labels[i].htmlFor == idVal)
             return labels[i];
     }
 }
 
-function toggle_like (event) {
+function toggle_like_callback(e) {
+    if (e.readyState === 4 && e.status === 200) {
+        let response = JSON.parse(e.response);
+        let comment = document.createElement('div');
+        this.comments.appendChild(comment);
+        if (response['status'] === 'OK') {
+            this.comments.remove();
+            this.comments = document.createElement('section');
+            this.comments.className = 'comments';
+            this.holder.insertBefore(this.comments, this.holder.firstChild);
+            this.get_comments();
+        } else {
+            this.comments.innerHTML = response['message'];
+            setTimeout(() => {
+                    this.comments.innerHTML = ""
+                },
+                4 * 1000);
+        }
+    }
+}
+
+function toggle_like(event) {
     let elem = event.currentTarget;
     label = find_label(elem);
     if (elem.value === 'pressed') {
-        elem.style.filter =  'invert(0%)';
+        elem.style.filter = 'invert(0%)';
         elem.value = '';
-        sendJSON({'action': 'delete_like', 'id': elem.id}, e => {});
-        if (label.innerHTML > 0)
-            label.innerHTML -= 1;
-    }
-    else {
-        elem.style.filter =  'invert(100%)';
+        sendJSON({
+            'action': 'delete_like',
+            'id': elem.id
+        }, toggle_like_callback);
+        if (Number(label.innerHTML) > 0)
+            label.innerHTML = Number(label.innerHTML) - 1;
+    } else {
+        elem.style.filter = 'invert(100%)';
         elem.value = 'pressed';
-        sendJSON({'action': 'add_like', 'id': elem.id}, e => {});
+        sendJSON({'action': 'add_like', 'id': elem.id}, toggle_like_callback);
         label.innerHTML = Number(label.innerHTML) + 1;
     }
     console.log('Like button ' + elem.id + ' pressed');
@@ -155,16 +171,18 @@ class Profile {
         this.passw.style.display = 'flex';
         this.email.style.display = 'none';
         if (this.login_input.validity.valid && this.passw.validity.valid) {
-            sendJSON({action: 'login',
+            sendJSON({
+                    action: 'login',
                     login: this.login_input.value,
-                    passw: this.passw.value},
+                    passw: this.passw.value
+                },
                 (e) => profile.toggle_profile_icons(e));
             profile.check_session();
         }
         console.log('Login button pressed');
     }
 
-    check_session () {
+    check_session() {
         sendJSON({action: "check_session"}, (e) => this.toggle_profile_icons(e));
         console.log('Check_session called');
     }
@@ -184,20 +202,16 @@ class Profile {
     }
 
     toggle_profile_icons(e) {
-        if (e.readyState === 4 && e.status === 200)
-        {
+        if (e.readyState === 4 && e.status === 200) {
             let response = JSON.parse(e.response);
-            if (response['status'] === 'OK')
-            {
+            if (response['status'] === 'OK') {
                 this.profile_icons_login();
                 this.login_name = e.response['login'];
                 document.getElementById('main').style.display = 'flex';
                 document.getElementById('main_not_logged').style.display = 'none';
                 load_cam();
                 console.log('Login OK: ' + e.response);
-            }
-            else
-            {
+            } else {
                 this.profile_icons_logout();
                 if (response['status'] === 'ERROR_LOGIN')
                     document.getElementById('login_message').innerHTML = 'Incorrect login or password';
@@ -206,7 +220,7 @@ class Profile {
         }
     }
 
-    open_profile_callback (e) {
+    open_profile_callback(e) {
         if (e.readyState === 4 && e.status === 200) {
             let response;
             response = JSON.parse(e.response);
@@ -228,14 +242,12 @@ class Profile {
 
     open_profile() {
         if (this.profile_info.style.display === "" ||
-            this.profile_info.style.display === "none")
-        {
+            this.profile_info.style.display === "none") {
             this.profile_info.style.display = 'flex';
             sendJSON({'action': 'get_profile'}, (e) => {
                 this.open_profile_callback(e);
             });
-        }
-        else {
+        } else {
             this.profile_info.style.display = 'none';
             document.getElementById('button_confirmation').innerHTML = 'Resend confirmation e-mail';
         }
@@ -243,8 +255,7 @@ class Profile {
     }
 
     reset_password_callback(e) {
-        if (e.readyState === 4 && e.status === 200)
-        {
+        if (e.readyState === 4 && e.status === 200) {
             let message = document.getElementById('login_message');
             let response = JSON.parse(e.response);
             if (response['status'] === 'OK')
@@ -261,35 +272,36 @@ class Profile {
         this.email.style.display = 'flex';
         this.passw.style.display = 'none';
         if (this.login_input.validity.valid && this.email.validity.valid) {
-            sendJSON({action: 'reset',
+            sendJSON({
+                    action: 'reset',
                     login: this.login_input.value,
-                    email: this.email.value},
+                    email: this.email.value
+                },
                 (e) => this.reset_password_callback(e));
         }
         console.log("Reset button pressed");
     }
 
-    register_callback (e) {
-        if (e.readyState === 4 && e.status === 200)
-        {
+    register_callback(e) {
+        if (e.readyState === 4 && e.status === 200) {
             let response = JSON.parse(e.response);
-            if (response['status'] === 'OK')
-            {
+            if (response['status'] === 'OK') {
                 this.login_message.innerHTML = "";
                 login_form_toggle();
                 profile.login();
                 profile.check_session();
-            }
-            else
+            } else
                 this.login_message.innerHTML = response['message'];
         }
     }
 
     register_send() {
-        sendJSON({action: "register",
+        sendJSON({
+            action: "register",
             login: this.login_input.value,
             email: this.email.value,
-            passw: this.passw.value}, (e) => this.register_callback(e));
+            passw: this.passw.value
+        }, (e) => this.register_callback(e));
         console.log("Register button pressed again");
     }
 
@@ -298,31 +310,33 @@ class Profile {
         this.passw.style.display = 'flex';
         this.email.style.display = 'flex';
         if (this.login_input.validity.valid && this.passw.validity.valid &&
-                this.email.validity.valid)
+            this.email.validity.valid)
             this.register_send();
         console.log("Register button pressed");
     }
 
     change_login_callback(e) {
-        if (e.readyState === 4 && e.status === 200)
-        {
+        if (e.readyState === 4 && e.status === 200) {
             let response = JSON.parse(e.response);
             if (response['status'] === 'OK') {
                 this.profile_message.style.color = 'green';
                 document.getElementById("new_login_form").style.display = "none";
-            }
-            else
+            } else
                 this.profile_message.style.color = 'red';
             this.profile_message.innerHTML = response['message'];
-            setTimeout(() => {this.profile_message.innerHTML = "";},
+            setTimeout(() => {
+                    this.profile_message.innerHTML = "";
+                },
                 4 * 1000);
         }
         console.log(e);
     }
 
     change_login() {
-        sendJSON({action: "change_login",
-        login: document.getElementById('new_login_input').value},
+        sendJSON({
+                action: "change_login",
+                login: document.getElementById('new_login_input').value
+            },
             (e) => this.change_login_callback(e));
     }
 
@@ -331,25 +345,27 @@ class Profile {
     }
 
     change_email_callback(e) {
-        if (e.readyState === 4 && e.status === 200)
-        {
+        if (e.readyState === 4 && e.status === 200) {
             let response = JSON.parse(e.response);
             if (response['status'] === 'OK') {
                 this.profile_message.style.color = 'green';
                 document.getElementById("new_email_form").style.display = "none";
-            }
-            else
+            } else
                 this.profile_message.style.color = 'red';
             this.profile_message.innerHTML = response['message'];
-            setTimeout(() => {this.profile_message.innerHTML = "";},
+            setTimeout(() => {
+                    this.profile_message.innerHTML = "";
+                },
                 4 * 1000);
         }
         console.log(e);
     }
 
     change_email() {
-        sendJSON({action: "change_email",
-                email: document.getElementById('new_email_input').value},
+        sendJSON({
+                action: "change_email",
+                email: document.getElementById('new_email_input').value
+            },
             (e) => this.change_email_callback(e));
 
     }
@@ -359,15 +375,16 @@ class Profile {
     }
 
     toggle_notify_callback(e) {
-        if (e.readyState === 4 && e.status === 200)
-        {
+        if (e.readyState === 4 && e.status === 200) {
             let response = JSON.parse(e.response);
             if (response['status'] === 'OK')
                 this.profile_message.style.color = 'green';
             else
                 this.profile_message.style.color = 'red';
             this.profile_message.innerHTML = response['message'];
-            setTimeout(() => {this.profile_message.innerHTML = "";},
+            setTimeout(() => {
+                    this.profile_message.innerHTML = "";
+                },
                 4 * 1000);
         }
         console.log(e);
@@ -376,31 +393,39 @@ class Profile {
     toggle_notify() {
         let checkbox = document.getElementById('profile_notify');
         if (checkbox.checked)
-            sendJSON({action: 'notify', value: 1}, (e) => this.toggle_notify_callback(e));
+            sendJSON({
+                action: 'notify',
+                value: 1
+            }, (e) => this.toggle_notify_callback(e));
         else
-            sendJSON({action: 'notify', value: 0}, (e) => this.toggle_notify_callback(e));
+            sendJSON({
+                action: 'notify',
+                value: 0
+            }, (e) => this.toggle_notify_callback(e));
     }
 
     change_passw_callback(e) {
-        if (e.readyState === 4 && e.status === 200)
-        {
+        if (e.readyState === 4 && e.status === 200) {
             let response = JSON.parse(e.response);
             if (response['status'] === 'OK') {
                 this.profile_message.style.color = 'green';
                 document.getElementById("new_passw_form").style.display = "none";
-            }
-            else
+            } else
                 this.profile_message.style.color = 'red';
             this.profile_message.innerHTML = response['message'];
-            setTimeout(() => {this.profile_message.innerHTML = "";},
+            setTimeout(() => {
+                    this.profile_message.innerHTML = "";
+                },
                 4 * 1000);
         }
         console.log(e);
     }
 
     change_passw() {
-        sendJSON({action: "change_passw",
-                passw: document.getElementById('new_passw_input').value},
+        sendJSON({
+                action: "change_passw",
+                passw: document.getElementById('new_passw_input').value
+            },
             (e) => this.change_passw_callback(e));
 
     }
@@ -415,19 +440,20 @@ class Gallery {
 
     constructor() {
         this.page = 1;
-        this.gallery = undefined;
+        this.holder = document.createElement('section');
+        this.holder.id = 'gallery';
+        this.items = [];
 
         this.load_gallery();
     }
 
     load_gallery() {
         this.page = 1;
-        if (this.gallery !== undefined)
-            this.gallery.remove();
-        this.gallery = document.createElement('section');
-        this.gallery.id = 'gallery';
-        document.getElementById('side').appendChild(this.gallery);
-        sendJSON({'action': 'get_gallery', 'page' : this.page},
+        this.holder.remove();
+        this.holder = document.createElement('section');
+        this.holder.id = 'gallery';
+        document.getElementById('side').appendChild(this.holder);
+        sendJSON({'action': 'get_gallery', 'page': this.page},
             (e) => this.load_gallery_callback(e));
     }
 
@@ -435,26 +461,33 @@ class Gallery {
         if (e.readyState === 4 && e.status === 200) {
             let response = JSON.parse(e.response);
             if (response.rows > 0)
-            {
-                response.data.forEach(function (item) {
-                    let gallery_item = new GalleryItem(item);
-                })
-            }
+                response.data.forEach(o => {
+                    this.items.push(new GalleryItem(
+                        o["likes"],
+                        o["user_like"],
+                        o["comments"],
+                        o["delete"],
+                        o["photo_id"],
+                        o["photo"],
+                        o["user"],
+                        o["datetime"],
+                        this))
+                });
             if (response.rows === 10)
                 this.add_load_more_button();
         }
     }
 
-    add_load_more_button () {
+    add_load_more_button() {
         let load_more_button = document.createElement('button');
         load_more_button.id = 'gallery_more';
         load_more_button.innerHTML = 'Load more...';
         load_more_button.addEventListener('click', () => this.load_more);
-        this.gallery.appendChild(load_more_button);
+        this.holder.appendChild(load_more_button);
         this.page += 1;
     }
 
-    load_more () {
+    load_more() {
         document.getElementById('gallery_more').remove();
         let loading = document.createElement('div');
         document.getElementById('gallery').appendChild(loading);
@@ -462,7 +495,7 @@ class Gallery {
         loading.innerHTML = 'Loading...';
         loading.style.textAlign = 'center';
         this.page += 1;
-        sendJSON({'action': 'get_gallery', 'page' : page},
+        sendJSON({'action': 'get_gallery', 'page': this.page},
             this.load_gallery_callback);
         console.log('load more...');
     }
@@ -470,45 +503,49 @@ class Gallery {
 
 class GalleryItem {
 
-    constructor(response) {
-        this.likes = response["likes"];
-        this.user_like = response["user_like"];
-        this.comments = response["comments"];
-        this.delete = response["delete"];
-        this.id = response["photo_id"];
-        this.gallery = document.getElementById('gallery');
+    constructor (likes, user_like, comments_num, is_del, photo_id, photo,
+                user, datetime, gal) {
 
-        this.gallery_item = document.createElement('section');
-        this.gallery_item.id = this.id;
-        this.gallery_item.className = 'gallery_item';
-        this.gallery.appendChild(this.gallery_item);
+        this.likes = Number(likes);
+        this.user_like = user_like;
+        this.comments_num = comments_num;
+        this.is_del = is_del;
+        this.id = photo_id;
+        this.photo = photo;
+        this.owner = user;
+        this.datetime = datetime;
+        this.gallery = gal;
+
+        this.holder = document.createElement('section');
+        this.holder.id = this.id;
+        this.holder.className = 'gallery_item';
+        this.gallery.holder.appendChild(this.holder);
 
         let gallery_item_img = document.createElement('img');
-        this.gallery_item.appendChild(gallery_item_img);
-        gallery_item_img.src = 'data:image/png;base64, ' + response["photo"];
+        this.holder.appendChild(gallery_item_img);
+        gallery_item_img.src = 'data:image/png;base64, ' + this.photo;
 
         let gallery_item_info = document.createElement('section');
-        this.gallery_item.appendChild(gallery_item_info);
+        this.holder.appendChild(gallery_item_info);
         gallery_item_info.className = 'gallery_item_info';
-        add_info(gallery_item_info, response);
+        add_info(gallery_item_info, this.owner, this.datetime);
 
         this.actions = new GalleryItemActions(this);
     }
 
-    delete_item_callback (e) {
-        if (e.readyState === 4 && e.status === 200)
-        {
+    delete_item_callback(e) {
+        if (e.readyState === 4 && e.status === 200) {
             let response = JSON.parse(e.response);
-            if (response['status'] === 'OK')
-            {
+            if (response['status'] === 'OK') {
                 let gallery_item = document.getElementById(response.id);
                 gallery_item.remove();
             }
         }
     }
 
-    delete_item () {
-        let obj = {action: 'delete',
+    delete_item() {
+        let obj = {
+            action: 'delete',
             id: this.id
         };
         sendJSON(obj, (e) => this.delete_item_callback(e));
@@ -518,33 +555,46 @@ class GalleryItem {
 
 class GalleryItemActions {
 
-    constructor(item) {
-        this.id = item.id;
-        this.parent = item;
+    constructor(gal_item) {
+        this.gal_item = gal_item;
+        this.id = this.gal_item.id;
+        this.likes = this.gal_item.likes;
+        this.user_like = this.gal_item.user_like;
+        this.comments_num = gal_item.comments_num;
+
         this.holder = document.createElement('section');
         this.holder.className = 'gallery_item_actions_holder';
-        item.gallery_item.appendChild(this.holder);
-        this.create_like_button();
-        this.create_comments_button();
-        if (item.delete == 1)
-            this.create_delete_button();
+        this.gal_item.holder.appendChild(this.holder);
+
+        this.error_holder = document.createElement('div');
+        this.error_holder.className = 'gallery_item_actions_holder_err_holder';
+        this.holder.appendChild(this.error_holder);
+
+        this.like = new Like(this);
+        this.comments = new Comments(this);
+        if (gal_item.is_del == 1)
+            this.del = new Delete(this);
+
+        // this.create_like_button();
+        // this.create_comments_button();
+        // if (gal_item.delete == 1)
+        //     this.create_delete_button();
     }
 
     create_delete_button() {
         let delete_button = document.createElement('button');
         this.holder.appendChild(delete_button);
         delete_button.className = 'gallery_item_buttons button delete_button';
-        delete_button.id = 'delete_' + this.id;
+        delete_button.id = 'delete_' + this.gal_item.id;
         delete_button.alt = 'Delete button';
         delete_button.onclick = () => this.parent.delete_item();
     }
 
-    create_like_button()
-    {
+    create_like_button() {
         let like_button = document.createElement('button');
         this.holder.appendChild(like_button);
         like_button.className = 'gallery_item_buttons button like_button';
-        like_button.id = 'like_' + this.id;
+        like_button.id = 'like_' + this.gal_item.id;
         like_button.alt = 'Like button';
         like_button.onclick = toggle_like;
         let like_button_label = document.createElement('label');
@@ -553,8 +603,7 @@ class GalleryItemActions {
         this.holder.appendChild(like_button_label);
     }
 
-    create_comments_button()
-    {
+    create_comments_button() {
         let comment_button = document.createElement('button');
         this.holder.appendChild(comment_button);
         let comments_class = new Comments(this.id);
@@ -569,14 +618,88 @@ class GalleryItemActions {
     }
 }
 
+class Like {
+
+    constructor(gal_item_actions) {
+
+        this.gal_item_actions = gal_item_actions;
+
+        this.id = this.gal_item_actions.id;
+        this.likes = this.gal_item_actions.likes;
+        this.user_like = this.gal_item_actions.user_like;
+
+        this.button = document.createElement('button');
+        this.button.className = 'gallery_item_buttons button like_button';
+        this.button.id = 'like_' + this.id;
+        this.button.alt = 'Like button';
+        this.button.onclick = (e) => this.toggle_like(e);
+        if (this.user_like == 1)
+            this.button.style.filter = 'invert(100%)';
+        this.gal_item_actions.holder.appendChild(this.button);
+
+        this.label = document.createElement('label');
+        this.label.htmlFor = 'like_' + this.id;
+        this.label.innerHTML = this.likes;
+        this.gal_item_actions.holder.appendChild(this.label);
+    }
+
+    delete_like_callback(e) {
+        if (e.readyState === 4 && e.status === 200) {
+            let response = JSON.parse(e.response);
+            if (response['status'] === 'OK') {
+                if (this.likes > 0) {
+                    this.user_like = 0;
+                    this.button.style.filter = 'invert(0%)';
+                    this.button.value = '';
+                    this.likes -= 1;
+                    this.label.innerHTML = this.likes;
+                }
+            } else {
+                this.gal_item_actions.error_holder.innerHTML = response['message'];
+                setTimeout(() => {this.gal_item_actions.error_holder.innerHTML = ""},
+                    4 * 1000);
+            }
+        }
+    }
+
+    add_like_callback(e) {
+        if (e.readyState === 4 && e.status === 200) {
+            let response = JSON.parse(e.response);
+            if (response['status'] === 'OK') {
+                this.button.style.filter = 'invert(100%)';
+                this.button.value = 'pressed';
+                this.likes += 1;
+                this.user_like = 1;
+                this.label.innerHTML = this.likes;
+            } else {
+                this.gal_item_actions.error_holder.innerHTML = response['message'];
+                setTimeout(() => {this.gal_item_actions.error_holder.innerHTML = ""},
+                    4 * 1000);
+            }
+        }
+    }
+
+    toggle_like() {
+        if (this.user_like == 1) {
+            sendJSON({'action': 'delete_like', 'id': this.id},
+                e => this.delete_like_callback(e));
+        } else {
+            sendJSON({'action': 'add_like', 'id': this.id},
+                e => this.add_like_callback(e));
+        }
+        console.log('Like_class button ' + this.id + ' pressed');
+    }
+
+}
+
 class Comments {
 
-    constructor(id) {
-        this.id = id;
+    constructor(parent) {
+        this.parent = parent;
         this.holder = document.createElement('section');
-        this.holder.id = ('comments_holder_' + this.id);
+        this.holder.id = ('comments_holder_' + this.parent.id);
         this.holder.className = 'comments_holder';
-        document.getElementById(id).appendChild(this.holder);
+        this.parent.holder.appendChild(this.holder);
 
         this.comments = document.createElement('section');
         this.comments.className = 'comments';
@@ -590,13 +713,13 @@ class Comments {
         this.comment_button = document.createElement('button');
         this.holder.appendChild(this.comment_button);
         this.comment_button.className = 'add_comment_button text_button';
-        this.comment_button.id = ('comment_button_' + this.id);
+        this.comment_button.id = ('comment_button_' + this.parent);
         this.comment_button.innerHTML = 'Add comment';
 
         this.send_button = document.createElement('button');
         this.holder.appendChild(this.send_button);
         this.send_button.className = 'send_comment_button text_button';
-        this.send_button.id = ('send_comment_button_' + this.id);
+        this.send_button.id = ('send_comment_button_' + this.parent);
         this.send_button.innerHTML = 'Send comment';
         this.send_button.style.display = 'none';
 
@@ -604,7 +727,7 @@ class Comments {
         this.send_button.onclick = () => this.send_comment();
     }
 
-    toggle_comments () {
+    toggle_comments() {
         if (this.holder.style.display === 'flex')
             this.holder.style.display = 'none';
         else {
@@ -613,25 +736,23 @@ class Comments {
         }
     }
 
-    show_comment_form () {
+    show_comment_form() {
         this.comment_form.style.display = 'flex';
         this.comment_button.style.display = 'none';
         this.send_button.style.display = 'block';
     }
 
-    get_comments () {
-        sendJSON({'action': 'get_comments', 'id' : this.id},
+    get_comments() {
+        sendJSON({'action': 'get_comments', 'id': this.parent},
             (e) => this.get_comments_callback(e));
     }
 
-    get_comments_callback (event) {
+    get_comments_callback(event) {
         console.log('get_comments_callback');
-        if (event.readyState === 4 && event.status === 200)
-        {
+        if (event.readyState === 4 && event.status === 200) {
             let response = JSON.parse(event.response);
-            if (response['status'] === 'OK')
-            {
-                response['comments'].forEach( e => {
+            if (response['status'] === 'OK') {
+                response['comments'].forEach(e => {
                     let comment = document.createElement('div');
                     comment.className = 'comment';
                     this.comments.appendChild(comment);
@@ -639,13 +760,13 @@ class Comments {
                     let comment_info = document.createElement('section');
                     comment_info.className = 'gallery_item_info';
                     this.comments.appendChild(comment_info);
-                    add_info(comment_info, e);
+                    add_info(comment_info, e.user, e.datetime);
                 })
-            }
-            else
-            {
+            } else {
                 this.comments.innerHTML = response['message'];
-                setTimeout(() => {this.comments.innerHTML = "";},
+                setTimeout(() => {
+                        this.comments.innerHTML = "";
+                    },
                     4 * 1000);
             }
         }
@@ -671,42 +792,48 @@ class Comments {
     }
 
     send_comment() {
-        sendJSON({'action': 'add_comment', 'id': this.id,
-            'data': this.comment_form.value}, (e) => this.send_comment_callback(e));
+        sendJSON({
+            'action': 'add_comment', 'id': this.parent,
+            'data': this.comment_form.value
+        }, (e) => this.send_comment_callback(e));
     }
 
-    send_comment_callback (e) {
-        if (e.readyState === 4 && e.status === 200)
-        {
+    send_comment_callback(e) {
+        if (e.readyState === 4 && e.status === 200) {
             let response = JSON.parse(e.response);
             let comment = document.createElement('div');
             this.comments.appendChild(comment);
-            if (response['status'] === 'OK')
-            {
+            if (response['status'] === 'OK') {
                 this.comments.remove();
                 this.comments = document.createElement('section');
                 this.comments.className = 'comments';
                 this.holder.insertBefore(this.comments, this.holder.firstChild);
                 this.get_comments();
-            }
-            else
-            {
+            } else {
                 this.comments.innerHTML = response['message'];
-                setTimeout(() => {this.comments.innerHTML = ""},
+                setTimeout(() => {
+                        this.comments.innerHTML = ""
+                    },
                     4 * 1000);
             }
         }
     }
 }
 
-function add_info(holder, item) {
+class Delete {
+    constructor(parent) {
+
+    }
+}
+
+function add_info(holder, user, datetime) {
 
     let div1 = document.createElement('div');
     div1.innerHTML = 'Created by';
     holder.appendChild(div1);
 
     let div2 = document.createElement('div');
-    div2.innerHTML = item.user;
+    div2.innerHTML = user;
     holder.appendChild(div2);
 
     let div3 = document.createElement('div');
@@ -714,7 +841,7 @@ function add_info(holder, item) {
     holder.appendChild(div3);
 
     let div4 = document.createElement('div');
-    div4.innerHTML = item.datetime;
+    div4.innerHTML = datetime;
     holder.appendChild(div4);
 }
 
@@ -725,17 +852,18 @@ function check_template() {
         document.getElementsByTagName('header')[0].append(warning);
     }
 }
+
 check_template();
 profile = new Profile();
 gallery = new Gallery();
 
-document.addEventListener('click', function(event) {
+document.addEventListener('click', function (event) {
     let target = event.target;
     let profile_info = document.getElementById('profile');
     let profile_button = document.getElementById('profile_button');
     if (profile_info.style.display === "flex") {
         if (profile_info.contains(target))
-            return ;
+            return;
         else
             profile.open_profile();
     }
@@ -744,8 +872,7 @@ document.addEventListener('click', function(event) {
 function load_cam() {
     navigator.mediaDevices.getUserMedia({video: true})
         .then(function (stream) {
-            if (stream)
-            {
+            if (stream) {
                 video.srcObject = stream;
                 localMediaStream = stream;
                 document.getElementById('videoContainer').style.display = 'flex';

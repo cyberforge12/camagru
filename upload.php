@@ -315,17 +315,12 @@ function delete_like ($arr, PDO $dbh) {
     $user = get_session_user($dbh);
     if ($user)
     {
-        $request = 'INSERT INTO Like (user, photo, like)
-            VALUES (?, ?, 0)';
+        $request = 'UPDATE Like SET like = 0 WHERE (user = ? and photo = ?)';
         $sth = $dbh->prepare($request);
         $sth->bindValue(1, $user);
-        $id = explode('_', $arr->id);
-        if ($id[1])
-        {
-            $sth->bindValue(2, $id[1]);
-            if ($sth->execute())
-                return ['status' => 'OK', 'message' => 'Like deleted'];
-        }
+        $sth->bindValue(2, $arr->id);
+        if ($sth->execute())
+            return ['status' => 'OK', 'message' => 'Like deleted'];
     }
     return ['status' => 'ERROR', 'message' => 'User not logged in'];
 }
@@ -338,15 +333,14 @@ function add_like ($arr, PDO $dbh) {
             VALUES (?, ?, 1)';
         $sth = $dbh->prepare($request);
         $sth->bindValue(1, $user);
-        $id = explode('_', $arr->id);
-        if ($id[1])
+        if ((int)$arr->id)
         {
-            $sth->bindValue(2, $id[1]);
+            $sth->bindValue(2, (int)$arr->id);
             if ($sth->execute())
                 return ['status' => 'OK', 'message' => 'Like recorded'];
         }
     }
-    return ['status' => 'ERROR', 'message' => 'User not logged in'];
+    return ['status' => 'ERROR', 'message' => 'Please, log in'];
 }
 
 function add_comment ($arr, PDO $dbh) {

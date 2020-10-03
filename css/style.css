@@ -309,6 +309,10 @@ input:invalid {
     margin-right: 5px;
 }
 
+.gallery_item_actions_err_holder {
+    color: red;
+}
+
 .gallery_item_buttons {
     background-color: #3E3E3C;
     background-size: 100%;
