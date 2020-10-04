@@ -18,8 +18,8 @@ class Paginator
 
     private function countComments($rowid) {
         $query = 'SELECT count(user) FROM Comment WHERE photo = ?';
-        $sth = $this->_dbh->query($query);
-        $sth->bindValue(1, $rowid, PDO::PARAM_INT);
+        $sth = $this->_dbh->prepare($query);
+        $sth->bindValue(1, $rowid, PDO::PARAM_STR);
         if ($sth->execute())
         {
             $ret = $sth->fetch();
@@ -31,8 +31,8 @@ class Paginator
 
     private function countLikes($id) {
         $query = 'SELECT sum(like) FROM Like WHERE photo = ?';
-        $sth = $this->_dbh->query($query);
-        $sth->bindValue(1, $id, PDO::PARAM_INT);
+        $sth = $this->_dbh->prepare($query);
+        $sth->bindValue(1, $id, PDO::PARAM_STR);
         if ($sth->execute())
         {
             $ret = $sth->fetch();
@@ -46,7 +46,7 @@ class Paginator
         $query = 'SELECT user FROM Like WHERE (user = ? and photo = ? and like = 1)';
         $sth = $this->_dbh->prepare($query);
         $sth->bindValue(1, $this->_user, PDO::PARAM_STR);
-        $sth->bindValue(2, $rowid, PDO::PARAM_INT);
+        $sth->bindValue(2, $rowid, PDO::PARAM_STR);
         if ($sth->execute()) {
             $ret = $sth->fetch();
             if ($ret && count($ret))
@@ -65,7 +65,8 @@ class Paginator
         else
             $query = $this->_query . " LIMIT " . ($this->_page - 1) *
                 $this->_limit . ", $this->_limit";
-        $sth = $this->_dbh->query($query);
+        $sth = $this->_dbh->prepare($query);
+        $sth->execute();
 
         $results = [];
         while ( $row = $sth->fetch(PDO::FETCH_ASSOC) )

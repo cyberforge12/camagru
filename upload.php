@@ -38,7 +38,8 @@ function resize_image($image, $w, $h, $crop=FALSE) {
 
 function create_img($arr) {
     $overlay = ROOT_PATH . 'img/' . $arr->img_name . '.png';
-    $dst_cam = imagecreatefromstring(base64_decode($arr->data));
+    if (!($dst_cam = imagecreatefromstring(base64_decode($arr->data))))
+        return false;
     $src_ovl = imagecreatefrompng($overlay);
     $dst_sx = imagesx($dst_cam);
     $dst_sy = imagesy($dst_cam);
@@ -72,13 +73,13 @@ function get_session_user (PDO $dbh) {
 }
 
 function process_image($arr, PDO $dbh) {
-    $merged = create_img($arr);
+    if (($merged = create_img($arr)) == false)
+        return ['status' => 'Error', 'message' => 'Incorrect image format'];
     ob_start();
     imagepng($merged);
     $image_data = ob_get_contents();
     ob_end_clean();
     header('Content-Type: application/json');
-    echo json_encode(['status' => 'OK']);
     $query = 'INSERT INTO Photo (datetime, photo, user, is_deleted)
         VALUES (current_timestamp, ?, ?, 0)';
     $sth = $dbh->prepare($query);
@@ -86,9 +87,9 @@ function process_image($arr, PDO $dbh) {
     $user = get_session_user($dbh);
     $sth->bindValue(2, (empty($user) ? session_id() : $user),
         PDO::PARAM_STR);
+    imagedestroy($merged);
     if ($sth->execute())
         return ['status' => 'OK', 'message' => 'Image added to gallery'];
-    imagedestroy($merged);
 }
 
 function update_session ($login, PDO $dbh) {
