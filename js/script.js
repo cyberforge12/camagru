@@ -448,7 +448,7 @@ class Gallery {
 
     load_gallery() {
         this.page = 1;
-        this.items.forEach(o => o.remove());
+        this.items.forEach(o => o.holder.remove());
         sendJSON({'action': 'get_gallery', 'page': this.page},
             (e) => this.load_gallery_callback(e));
         this.loading.style.display = 'block';

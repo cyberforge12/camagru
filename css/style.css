@@ -293,7 +293,6 @@ input:invalid {
 }
 
 #gallery_items {
-    height: 100%;
     display: flex;
     flex-direction: column;
     justify-items: center;
