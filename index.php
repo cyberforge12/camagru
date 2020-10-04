@@ -118,7 +118,8 @@ require_once('config/setup.php');
 			<label for="form_file">Cam is not available. Upload a
 				photo: </label>
 			<input id="form_file" name="form_file" placeholder="Choose
-			photo to upload..." type="file">
+			photo to upload..." type="file" accept="image/*"
+				   onchange="check_file()" />
 		</form>
 		<button class="text_button" id="snapshot" onclick="snapshot()"
 				disabled title="Select as overlay image above">SEND

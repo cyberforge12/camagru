@@ -51,6 +51,36 @@ function select_img(item) {
     console.log('Image added to cam!');
 }
 
+function snapshot_upload_callback (e) {
+    if (e.readyState === 4 && e.status === 200) {
+        let response = JSON.parse(e.response);
+        if (response['status'] === 'OK') {
+            this.gallery.load_gallery();
+        }
+        else {
+            let main = document.getElementById('main');
+            let message = document.createElement('div');
+            main.appendChild(message);
+            message.innerHTML = response['message'];
+        }
+    }
+}
+
+function file_upload_callback (e) {
+    if (e.readyState === 4 && e.status === 200) {
+        let response = JSON.parse(e.response);
+        if (response['status'] === 'OK') {
+            this.gallery.load_gallery();
+        }
+        else {
+            let main = document.getElementById('main');
+            let message = document.createElement('div');
+            main.appendChild(message);
+            message.innerHTML = response['message'];
+        }
+    }
+}
+
 function snapshot() {
     let obj = {};
     obj.action = 'image_upload';
@@ -63,16 +93,18 @@ function snapshot() {
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         let data = canvas.toDataURL();
         obj.data = data.split(',')[1];
+        sendJSON(obj, e => snapshot_upload_callback(e))
     } else {
-        let file = document.getElementById('form_file').files[0];
-        let reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = split_file(reader, obj);
+        let file = document.getElementById("form_file");
+        if ( /\.(jpe?g|png|gif)$/i.test(file.files[0].name) === false )
+            alert("Invalid file! Please, upload an image.");
+        else if (file) {
+            let reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = split_file(reader, obj);
+            sendJSON(obj, e => file_upload_callback(e))
+        }
     }
-    sendJSON(obj, (e) => {
-        if (e.readyState === 4 && e.status === 200)
-            this.gallery.load_gallery();
-    });
 }
 
 function split_file(reader, obj) {
@@ -93,57 +125,6 @@ function sendJSON(obj, callback) {
         xhhtp.send(request);
         return xhhtp.response;
     }
-}
-
-function find_label(el) {
-    var idVal = el.id;
-    labels = document.getElementsByTagName('label');
-    for (var i = 0; i < labels.length; i++) {
-        if (labels[i].htmlFor == idVal)
-            return labels[i];
-    }
-}
-
-function toggle_like_callback(e) {
-    if (e.readyState === 4 && e.status === 200) {
-        let response = JSON.parse(e.response);
-        let comment = document.createElement('div');
-        this.comments.appendChild(comment);
-        if (response['status'] === 'OK') {
-            this.comments.remove();
-            this.comments = document.createElement('section');
-            this.comments.className = 'comments';
-            this.holder.insertBefore(this.comments, this.holder.firstChild);
-            this.get_comments();
-        } else {
-            this.comments.innerHTML = response['message'];
-            setTimeout(() => {
-                    this.comments.innerHTML = ""
-                },
-                4 * 1000);
-        }
-    }
-}
-
-function toggle_like(event) {
-    let elem = event.currentTarget;
-    label = find_label(elem);
-    if (elem.value === 'pressed') {
-        elem.style.filter = 'invert(0%)';
-        elem.value = '';
-        sendJSON({
-            'action': 'delete_like',
-            'id': elem.id
-        }, toggle_like_callback);
-        if (Number(label.innerHTML) > 0)
-            label.innerHTML = Number(label.innerHTML) - 1;
-    } else {
-        elem.style.filter = 'invert(100%)';
-        elem.value = 'pressed';
-        sendJSON({'action': 'add_like', 'id': elem.id}, toggle_like_callback);
-        label.innerHTML = Number(label.innerHTML) + 1;
-    }
-    console.log('Like button ' + elem.id + ' pressed');
 }
 
 class Profile {
@@ -440,21 +421,37 @@ class Gallery {
 
     constructor() {
         this.page = 1;
+        this.items = [];
+
         this.holder = document.createElement('section');
         this.holder.id = 'gallery';
-        this.items = [];
+        document.getElementById('side').appendChild(this.holder);
+
+        this.holder_items = document.createElement('section');
+        this.holder_items.id = 'gallery_items';
+        this.holder.appendChild(this.holder_items);
+
+        this.load_more_button = document.createElement('button');
+        this.load_more_button.className = "button text_button";
+        this.load_more_button.id = 'gallery_more';
+        this.load_more_button.innerHTML = 'Load more...';
+        this.load_more_button.onclick = () => this.load_more();
+        this.holder.appendChild(this.load_more_button);
+
+        this.loading = document.createElement('div');
+        this.loading.id = 'gal_loading';
+        this.loading.innerHTML = 'Loading...';
+        this.holder.appendChild(this.loading);
 
         this.load_gallery();
     }
 
     load_gallery() {
         this.page = 1;
-        this.holder.remove();
-        this.holder = document.createElement('section');
-        this.holder.id = 'gallery';
-        document.getElementById('side').appendChild(this.holder);
+        this.items.forEach(o => o.remove());
         sendJSON({'action': 'get_gallery', 'page': this.page},
             (e) => this.load_gallery_callback(e));
+        this.loading.style.display = 'block';
     }
 
     load_gallery_callback(e) {
@@ -473,31 +470,24 @@ class Gallery {
                         o["datetime"],
                         this))
                 });
+            this.loading.style.display = "none";
             if (response.rows === 10)
-                this.add_load_more_button();
+                this.load_more_button.style.display = 'block';
         }
     }
 
-    add_load_more_button() {
-        let load_more_button = document.createElement('button');
-        load_more_button.id = 'gallery_more';
-        load_more_button.innerHTML = 'Load more...';
-        load_more_button.addEventListener('click', () => this.load_more);
-        this.holder.appendChild(load_more_button);
-        this.page += 1;
-    }
-
     load_more() {
-        document.getElementById('gallery_more').remove();
-        let loading = document.createElement('div');
-        document.getElementById('gallery').appendChild(loading);
-        loading.id = 'div_loading';
-        loading.innerHTML = 'Loading...';
-        loading.style.textAlign = 'center';
         this.page += 1;
+        this.loading.style.display = 'block';
+        this.load_more_button.style.display = "none";
         sendJSON({'action': 'get_gallery', 'page': this.page},
-            this.load_gallery_callback);
-        console.log('load more...');
+            (e) => this.load_gallery_callback(e));
+    }
+}
+
+class Loading {
+
+    constructor() {
     }
 }
 
@@ -519,7 +509,7 @@ class GalleryItem {
         this.holder = document.createElement('section');
         this.holder.id = this.id;
         this.holder.className = 'gallery_item';
-        this.gallery.holder.appendChild(this.holder);
+        this.gallery.holder_items.appendChild(this.holder);
 
         let gallery_item_img = document.createElement('img');
         this.holder.appendChild(gallery_item_img);
@@ -574,47 +564,6 @@ class GalleryItemActions {
         this.comments = new Comments(this);
         if (gal_item.is_del == 1)
             this.del = new Delete(this);
-
-        // this.create_like_button();
-        // this.create_comments_button();
-        // if (gal_item.delete == 1)
-        //     this.create_delete_button();
-    }
-
-    create_delete_button() {
-        let delete_button = document.createElement('button');
-        this.holder.appendChild(delete_button);
-        delete_button.className = 'gallery_item_buttons button delete_button';
-        delete_button.id = 'delete_' + this.gal_item.id;
-        delete_button.alt = 'Delete button';
-        delete_button.onclick = () => this.parent.delete_item();
-    }
-
-    create_like_button() {
-        let like_button = document.createElement('button');
-        this.holder.appendChild(like_button);
-        like_button.className = 'gallery_item_buttons button like_button';
-        like_button.id = 'like_' + this.gal_item.id;
-        like_button.alt = 'Like button';
-        like_button.onclick = toggle_like;
-        let like_button_label = document.createElement('label');
-        like_button_label.htmlFor = 'like_' + this.id;
-        like_button_label.innerHTML = this.parent.likes;
-        this.holder.appendChild(like_button_label);
-    }
-
-    create_comments_button() {
-        let comment_button = document.createElement('button');
-        this.holder.appendChild(comment_button);
-        let comments_class = new Comments(this.id);
-        comment_button.className = 'gallery_item_buttons button comments_button';
-        comment_button.id = 'comment_' + this.id;
-        comment_button.alt = 'Comments button';
-        comment_button.onclick = () => comments_class.toggle_comments();
-        let comment_button_label = document.createElement('label');
-        comment_button_label.htmlFor = 'comment_' + this.id;
-        comment_button_label.innerHTML = this.parent.comments;
-        this.holder.appendChild(comment_button_label);
     }
 }
 
@@ -853,22 +802,6 @@ function check_template() {
     }
 }
 
-check_template();
-profile = new Profile();
-gallery = new Gallery();
-
-document.addEventListener('click', function (event) {
-    let target = event.target;
-    let profile_info = document.getElementById('profile');
-    let profile_button = document.getElementById('profile_button');
-    if (profile_info.style.display === "flex") {
-        if (profile_info.contains(target))
-            return;
-        else
-            profile.open_profile();
-    }
-}, true);
-
 function load_cam() {
     navigator.mediaDevices.getUserMedia({video: true})
         .then(function (stream) {
@@ -886,3 +819,20 @@ function load_cam() {
                 document.getElementById('upload').style.display = 'flex';
         });
 }
+
+check_template();
+profile = new Profile();
+gallery = new Gallery();
+
+document.addEventListener('click', function (event) {
+    let target = event.target;
+    let profile_info = document.getElementById('profile');
+    let profile_button = document.getElementById('profile_button');
+    if (profile_info.style.display === "flex") {
+        if (profile_info.contains(target))
+            return;
+        else
+            profile.open_profile();
+    }
+}, true);
+

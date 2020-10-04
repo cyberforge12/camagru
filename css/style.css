@@ -177,7 +177,7 @@ input:invalid {
 
 .content {
     width: 100%;
-    height: 70vh;
+    height: 80vh;
     display: flex;
     align-items: stretch;
     flex-grow: 1;
@@ -230,12 +230,39 @@ input:invalid {
 
 #videoContainer {
     display: none;
-    height: 60%;
+    height: 50%;
     justify-content: center;
 }
 
 #cam {
+    background-image: url("../img/frame.png");
+    background-size: inherit;
     max-height: 100%;
+    opacity: 0.5;
+}
+
+#cam::after {
+    content: '';
+    background-image: url("../img/frame.png");
+    position: absolute;
+    border-radius: 5px;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+#cam_overlay {
+    position:absolute;
+    float:left;
+    width:100%;
+    height:100%;
+    background-color:#000;
+    z-index:300000;
+}
+
+#snapshot {
+    height: 10%;
 }
 
 #upload {
@@ -247,10 +274,6 @@ input:invalid {
 
 #upload > * {
 }
-
-/*#cam {*/
-/*    object-fit: cover;*/
-/*}*/
 
 .side {
     display: flex;
@@ -267,6 +290,24 @@ input:invalid {
     justify-items: center;
     /*flex: 0 1 auto;*/
     /*flex-direction: column;*/
+}
+
+#gallery_items {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-items: center;
+    /*flex: 0 1 auto;*/
+    /*flex-direction: column;*/
+}
+
+#gal_loading {
+    text-align: center;
+    display: none;
+}
+
+#gallery_more {
+    display: none;
 }
 
 .gallery_item {
