@@ -375,7 +375,6 @@ input:invalid {
 }
 
 .comments_holder {
-    display: none;
     flex-direction: column;
 }
 

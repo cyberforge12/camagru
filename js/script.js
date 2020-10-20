@@ -561,9 +561,32 @@ class GalleryItemActions {
         this.holder.appendChild(this.error_holder);
 
         this.like = new Like(this);
-        this.comments = new Comments(this);
+        this.comments = new Comment(this);
         if (gal_item.is_del == 1)
             this.del = new Delete(this);
+    }
+}
+
+class Comment {
+
+    constructor(gal_item_actions) {
+
+        this.gal_item_actions = gal_item_actions;
+
+        this.id = this.gal_item_actions.id;
+        this.comments_num = this.gal_item_actions.comments_num;
+
+        this.button = document.createElement('button');
+        this.button.className = 'gallery_item_buttons button comments_button';
+        this.button.id = 'comment_' + this.id;
+        this.button.alt = 'Comment button';
+        this.button.onclick = () => {new Comments(this.gal_item_actions.gal_item)};
+        this.gal_item_actions.holder.appendChild(this.button);
+
+        this.label = document.createElement('label');
+        this.label.htmlFor = 'comment_' + this.id;
+        this.label.innerHTML = this.comments_num;
+        this.gal_item_actions.holder.appendChild(this.label);
     }
 }
 
@@ -692,7 +715,7 @@ class Comments {
     }
 
     get_comments() {
-        sendJSON({'action': 'get_comments', 'id': this.parent},
+        sendJSON({'action': 'get_comments', 'id': this.parent.id},
             (e) => this.get_comments_callback(e));
     }
 
@@ -742,7 +765,7 @@ class Comments {
 
     send_comment() {
         sendJSON({
-            'action': 'add_comment', 'id': this.parent,
+            'action': 'add_comment', 'id': this.parent.id,
             'data': this.comment_form.value
         }, (e) => this.send_comment_callback(e));
     }
