@@ -48,7 +48,8 @@ function create_img($arr) {
         $dst_sx, $dst_sy, imagesx($src_ovl), imagesy($src_ovl));
     elseif ($arr->img_name === 'think')
         imagecopyresized($dst_cam, $src_ovl, $dst_sx * 0.75, 50,
-            0, 0, 150, 150, imagesx($src_ovl), imagesy($src_ovl));
+            0, 0, $dst_sx * 0.25, $dst_sy * 0.25, imagesx($src_ovl), imagesy
+    ($src_ovl));
     elseif ($arr->img_name === 'discount')
         imagecopyresized($dst_cam, $src_ovl, 0, $dst_sy - 150,
             0, 0, 150, 150, imagesx($src_ovl), imagesy($src_ovl));
@@ -281,7 +282,8 @@ function get_gallery($arr, PDO $dbh) {
 function check_session(PDO $dbh) {
     $user = get_session_user($dbh);
     if (!empty($user))
-        return ['status' => 'OK', 'message' => 'Session login OK'];
+        return ['status' => 'OK', 'message' => 'Session login OK', 'login' =>
+            $user];
     else
         return ['status' => 'ERROR', 'message' => 'No session login'];
 }
@@ -292,11 +294,13 @@ function get_comments ($arr, PDO $dbh) {
     $sth->bindValue(1, $arr->id);
     $sth->execute();
     $ret = [];
-    if ($ret['comments'] = $sth->fetchAll(PDO::FETCH_ASSOC))
+    if ($ret['comments'] = $sth->fetchAll(PDO::FETCH_ASSOC)) {
+        $ret['count'] = count($ret['comments']);
         $ret['status'] = "OK";
+    }
     else {
         $ret['status'] = "Error";
-        $ret['message'] = "Empty comments";
+        $ret['message'] = "No comments";
     }
     return $ret;
 }

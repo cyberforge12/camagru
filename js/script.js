@@ -97,18 +97,22 @@ function snapshot() {
     } else {
         let file = document.getElementById("form_file");
         if ( /\.(jpe?g|png|gif)$/i.test(file.files[0].name) === false )
-            alert("Invalid file! Please, upload an image.");
+            alert("Invalid file! Please, upload an image (jpeg, png or gif).");
         else if (file) {
             let reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = split_file(reader, obj);
-            sendJSON(obj, e => file_upload_callback(e))
+            reader.onload = (e) => split_file(e, reader, obj);
+            reader.readAsDataURL(file.files[0]);
         }
     }
 }
 
-function split_file(reader, obj) {
-    obj.data = reader.result.split(',')[1];
+function split_file(e, reader, obj) {
+    let str = "";
+    if (reader.result) {
+        str = reader.result;
+        obj.data = str.split(',')[1];
+        sendJSON(obj, e => file_upload_callback(e))
+    }
 }
 
 function sendJSON(obj, callback) {
@@ -187,16 +191,16 @@ class Profile {
             let response = JSON.parse(e.response);
             if (response['status'] === 'OK') {
                 this.profile_icons_login();
-                this.login_name = e.response['login'];
+                profile.login_name = response['login'];
                 document.getElementById('main').style.display = 'flex';
                 document.getElementById('main_not_logged').style.display = 'none';
                 load_cam();
-                console.log('Login OK: ' + e.response);
+                console.log('Login OK: ' + response);
             } else {
                 this.profile_icons_logout();
                 if (response['status'] === 'ERROR_LOGIN')
                     document.getElementById('login_message').innerHTML = 'Incorrect login or password';
-                console.log('Login Error: ' + e.response);
+                console.log('Login Error: ' + response);
             }
         }
     }
@@ -485,12 +489,6 @@ class Gallery {
     }
 }
 
-class Loading {
-
-    constructor() {
-    }
-}
-
 class GalleryItem {
 
     constructor (likes, user_like, comments_num, is_del, photo_id, photo,
@@ -521,6 +519,7 @@ class GalleryItem {
         add_info(gallery_item_info, this.owner, this.datetime);
 
         this.actions = new GalleryItemActions(this);
+        this.comments = new Comments1(this);
     }
 
     delete_item_callback(e) {
@@ -561,13 +560,13 @@ class GalleryItemActions {
         this.holder.appendChild(this.error_holder);
 
         this.like = new Like(this);
-        this.comments = new Comment(this);
+        this.comments = new CommentsButton(this);
         if (gal_item.is_del == 1)
             this.del = new Delete(this);
     }
 }
 
-class Comment {
+class CommentsButton {
 
     constructor(gal_item_actions) {
 
@@ -580,7 +579,8 @@ class Comment {
         this.button.className = 'gallery_item_buttons button comments_button';
         this.button.id = 'comment_' + this.id;
         this.button.alt = 'Comment button';
-        this.button.onclick = () => {new Comments(this.gal_item_actions.gal_item)};
+
+        this.button.onclick = () => this.gal_item_actions.gal_item.comments.toggle_comments();
         this.gal_item_actions.holder.appendChild(this.button);
 
         this.label = document.createElement('label');
@@ -618,15 +618,8 @@ class Like {
     delete_like_callback(e) {
         if (e.readyState === 4 && e.status === 200) {
             let response = JSON.parse(e.response);
-            if (response['status'] === 'OK') {
-                if (this.likes > 0) {
-                    this.user_like = 0;
-                    this.button.style.filter = 'invert(0%)';
-                    this.button.value = '';
-                    this.likes -= 1;
-                    this.label.innerHTML = this.likes;
-                }
-            } else {
+            if (response['status'] !== 'OK') {
+                this.add_like();
                 this.gal_item_actions.error_holder.innerHTML = response['message'];
                 setTimeout(() => {this.gal_item_actions.error_holder.innerHTML = ""},
                     4 * 1000);
@@ -637,13 +630,8 @@ class Like {
     add_like_callback(e) {
         if (e.readyState === 4 && e.status === 200) {
             let response = JSON.parse(e.response);
-            if (response['status'] === 'OK') {
-                this.button.style.filter = 'invert(100%)';
-                this.button.value = 'pressed';
-                this.likes += 1;
-                this.user_like = 1;
-                this.label.innerHTML = this.likes;
-            } else {
+            if (response['status'] !== 'OK') {
+                this.remove_like();
                 this.gal_item_actions.error_holder.innerHTML = response['message'];
                 setTimeout(() => {this.gal_item_actions.error_holder.innerHTML = ""},
                     4 * 1000);
@@ -651,11 +639,31 @@ class Like {
         }
     }
 
+    remove_like() {
+        if (this.likes > 0) {
+            this.user_like = 0;
+            this.button.style.filter = 'invert(0%)';
+            this.button.value = '';
+            this.likes -= 1;
+            this.label.innerHTML = this.likes;
+        }
+    }
+
+    add_like() {
+        this.button.style.filter = 'invert(100%)';
+        this.button.value = 'pressed';
+        this.likes += 1;
+        this.user_like = 1;
+        this.label.innerHTML = this.likes;
+    }
+
     toggle_like() {
         if (this.user_like == 1) {
+            this.remove_like();
             sendJSON({'action': 'delete_like', 'id': this.id},
                 e => this.delete_like_callback(e));
         } else {
+            this.add_like();
             sendJSON({'action': 'add_like', 'id': this.id},
                 e => this.add_like_callback(e));
         }
@@ -664,10 +672,10 @@ class Like {
 
 }
 
-class Comments {
+class Comments1 {
 
-    constructor(parent) {
-        this.parent = parent;
+    constructor(gallery_item) {
+        this.parent = gallery_item;
         this.holder = document.createElement('section');
         this.holder.id = ('comments_holder_' + this.parent.id);
         this.holder.className = 'comments_holder';
@@ -682,11 +690,13 @@ class Comments {
         this.comment_form.style.display = 'none';
         this.holder.appendChild(this.comment_form);
 
-        this.comment_button = document.createElement('button');
-        this.holder.appendChild(this.comment_button);
-        this.comment_button.className = 'add_comment_button text_button';
-        this.comment_button.id = ('comment_button_' + this.parent);
-        this.comment_button.innerHTML = 'Add comment';
+        if (profile.login_name) {
+            this.comment_button = document.createElement('button');
+            this.holder.appendChild(this.comment_button);
+            this.comment_button.className = 'add_comment_button text_button';
+            this.comment_button.id = ('comment_button_' + this.parent);
+            this.comment_button.innerHTML = 'Add comment';
+        }
 
         this.send_button = document.createElement('button');
         this.holder.appendChild(this.send_button);
@@ -695,8 +705,10 @@ class Comments {
         this.send_button.innerHTML = 'Send comment';
         this.send_button.style.display = 'none';
 
-        this.comment_button.onclick = () => this.show_comment_form();
-        this.send_button.onclick = () => this.send_comment();
+        if (profile.login_name) {
+            this.comment_button.onclick = () => this.show_comment_form();
+            this.send_button.onclick = () => this.send_comment();
+        }
     }
 
     toggle_comments() {
@@ -715,6 +727,7 @@ class Comments {
     }
 
     get_comments() {
+        this.comments.innerHTML = "Loading...";
         sendJSON({'action': 'get_comments', 'id': this.parent.id},
             (e) => this.get_comments_callback(e));
     }
@@ -724,6 +737,8 @@ class Comments {
         if (event.readyState === 4 && event.status === 200) {
             let response = JSON.parse(event.response);
             if (response['status'] === 'OK') {
+                this.comments.innerHTML = "";
+                this.parent.actions.comments.label.innerHTML = response['count'];
                 response['comments'].forEach(e => {
                     let comment = document.createElement('div');
                     comment.className = 'comment';
@@ -776,16 +791,10 @@ class Comments {
             let comment = document.createElement('div');
             this.comments.appendChild(comment);
             if (response['status'] === 'OK') {
-                this.comments.remove();
-                this.comments = document.createElement('section');
-                this.comments.className = 'comments';
-                this.holder.insertBefore(this.comments, this.holder.firstChild);
                 this.get_comments();
             } else {
                 this.comments.innerHTML = response['message'];
-                setTimeout(() => {
-                        this.comments.innerHTML = ""
-                    },
+                setTimeout(() => {this.comments.innerHTML = ""},
                     4 * 1000);
             }
         }
