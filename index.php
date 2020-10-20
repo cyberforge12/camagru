@@ -128,7 +128,7 @@ require_once('config/setup.php');
 	</section>
 
 </section>
-<footer class="footer">&copy;Чистяков П. В., 2020</footer>
+<footer class="footer">&copy;Чистяков П. В., &copy;mmanhack, 2020</footer>
 <script type="text/javascript" src="js/script.js"></script>
 </body>
 </html>

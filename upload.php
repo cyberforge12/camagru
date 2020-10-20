@@ -385,14 +385,14 @@ function set_notifications ($arr, PDO $dbh) {
 }
 
 function send_notification ($user, $photo_id, PDO $dbh) {
-    $request = "SELECT email FROM User WHERE user = (SELECT user FROM Photo WHERE photo_id = ?)";
+    $request = "SELECT email FROM User WHERE user = (SELECT user FROM Photo WHERE photo_id = ? AND notify = 1)";
     $sth = $dbh->prepare($request);
     $sth->bindValue(1, $photo_id);
     if ($sth->execute()) {
-        $email = $sth->fetch()[0];
-        return mail($email, 'Camagru - ' . $user . ' commented your photo',
-            $user . ' posted a comment to your photo on Camagru website (http://' .
-            $_SERVER['HTTP_HOST'] . ').');
+        if (($email = $sth->fetch()))
+            return mail($email, 'Camagru - ' . $user . ' commented your photo',
+                $user . ' posted a comment to your photo on Camagru website (http://' .
+                $_SERVER['HTTP_HOST'] . ').');
     }
 }
 

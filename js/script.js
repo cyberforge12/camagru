@@ -190,6 +190,7 @@ class Profile {
         if (e.readyState === 4 && e.status === 200) {
             let response = JSON.parse(e.response);
             if (response['status'] === 'OK') {
+                gallery.load_gallery();
                 this.profile_icons_login();
                 profile.login_name = response['login'];
                 document.getElementById('main').style.display = 'flex';
@@ -248,6 +249,11 @@ class Profile {
             else
                 message.style.color = 'red';
             message.innerHTML = response['message'];
+            setTimeout(() => {
+                message.innerHTML = "";
+                profile.email.value = "";
+                },
+                4 * 1000);
         }
         console.log(e);
     }
@@ -522,24 +528,6 @@ class GalleryItem {
         this.comments = new Comments1(this);
     }
 
-    delete_item_callback(e) {
-        if (e.readyState === 4 && e.status === 200) {
-            let response = JSON.parse(e.response);
-            if (response['status'] === 'OK') {
-                let gallery_item = document.getElementById(response.id);
-                gallery_item.remove();
-            }
-        }
-    }
-
-    delete_item() {
-        let obj = {
-            action: 'delete',
-            id: this.id
-        };
-        sendJSON(obj, (e) => this.delete_item_callback(e));
-        console.log('Delete button ' + obj.id + ' pressed');
-    }
 }
 
 class GalleryItemActions {
@@ -802,8 +790,38 @@ class Comments1 {
 }
 
 class Delete {
-    constructor(parent) {
+    constructor(gal_item_actions) {
+        this.gal_item_actions = gal_item_actions;
 
+        this.id = this.gal_item_actions.id;
+        this.comments_num = this.gal_item_actions.comments_num;
+
+        this.button = document.createElement('button');
+        this.button.className = 'gallery_item_buttons button delete_button';
+        this.button.id = 'delete_' + this.id;
+        this.button.alt = 'Delete button';
+        this.button.onclick = () => this.delete_item();
+
+        this.gal_item_actions.holder.appendChild(this.button);
+    }
+
+    delete_item_callback(e) {
+        if (e.readyState === 4 && e.status === 200) {
+            let response = JSON.parse(e.response);
+            if (response['status'] === 'OK') {
+                let gallery_item = document.getElementById(response.id);
+                gallery_item.remove();
+            }
+        }
+    }
+
+    delete_item() {
+        let obj = {
+            action: 'delete',
+            id: this.id
+        };
+        sendJSON(obj, (e) => this.delete_item_callback(e));
+        console.log('Delete button ' + obj.id + ' pressed');
     }
 }
 
