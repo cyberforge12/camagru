@@ -4,38 +4,6 @@ require_once('constants.php');
 require_once ('config/database.php');
 require_once ('Paginator.class.php');
 
-function resize_image($image, $w, $h, $crop=FALSE) {
-    $width = imagesx($image);
-    $height = imagesy($image);
-    $r = $width / $height;
-    if ($crop) {
-        if ($width > $height) {
-            $width = ceil($width-($width*abs($r-$w/$h)));
-        } else {
-            $height = ceil($height-($height*abs($r-$w/$h)));
-        }
-        $newwidth = $w;
-        $newheight = $h;
-    } else {
-        if ($w/$h > $r) {
-            $newwidth = $h*$r;
-            $newheight = $h;
-        } else {
-            $newheight = $w/$r;
-            $newwidth = $w;
-        }
-    }
-    $dst = imagecreatetruecolor($newwidth, $newheight);
-    imagealphablending( $dst, false );
-    imagesavealpha( $dst, true );
-    imagecopyresampled($dst, $image,
-        0, 0,
-        0, 0,
-        $newwidth, $newheight,
-        $width, $height);
-    return $dst;
-}
-
 function create_img($arr) {
     $overlay = ROOT_PATH . 'img/' . $arr->img_name . '.png';
     if (!($dst_cam = imagecreatefromstring(base64_decode($arr->data))))
@@ -91,6 +59,8 @@ function process_image($arr, PDO $dbh) {
     imagedestroy($merged);
     if ($sth->execute())
         return ['status' => 'OK', 'message' => 'Image added to gallery'];
+    else
+        return ['status' => 'Error', 'message' => 'Image cannot be processed'];
 }
 
 function update_session ($login, PDO $dbh) {
@@ -257,17 +227,7 @@ function get_profile(PDO $dbh) {
         return ['status' => 'ERROR', 'message' => 'No session login'];
 }
 
-function load_gallery(PDO $dbh) {
-    $request = 'SELECT datetime, photo, user FROM Photo';
-    $sth = $dbh->prepare($request);
-    $sth->execute();
-    return $sth;
-}
-
 function get_gallery($arr, PDO $dbh) {
-//    load_gallery($dbh);
-//    $result = $sth->fetch();
-//
     $user = get_session_user($dbh);
     $limit = 10;
     $page = ( isset ( $arr->page ) ) ? $arr->page : 1;
@@ -275,8 +235,7 @@ function get_gallery($arr, PDO $dbh) {
             WHERE is_deleted = 0
             ORDER BY datetime DESC";
     $Paginator = new Paginator( $dbh, $query, $user );
-    $results = $Paginator->getData( $limit, $page );
-    return $results;
+    return $Paginator->getData( $limit, $page );
 }
 
 function check_session(PDO $dbh) {
@@ -394,6 +353,7 @@ function send_notification ($user, $photo_id, PDO $dbh) {
                 $user . ' posted a comment to your photo on Camagru website (http://' .
                 $_SERVER['HTTP_HOST'] . ').');
     }
+    return null;
 }
 
 function reset_password ($arr, PDO $dbh) {

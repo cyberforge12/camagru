@@ -16,11 +16,10 @@ function logout() {
     sendJSON({"action": "logout"}, () => {
         location.reload()
     });
-    console.log('OK - logout');
 }
 
 function login_form_toggle() {
-    var login = document.getElementById('login_form');
+    let login = document.getElementById('login_form');
     if (!display_login) {
         login.style.display = 'flex';
         display_login = true;
@@ -48,25 +47,9 @@ function select_img(item) {
         snapshot_button.removeAttribute('disabled');
     else
         snapshot_button.setAttribute('disabled', '');
-    console.log('Image added to cam!');
 }
 
 function snapshot_upload_callback (e) {
-    if (e.readyState === 4 && e.status === 200) {
-        let response = JSON.parse(e.response);
-        if (response['status'] === 'OK') {
-            this.gallery.load_gallery();
-        }
-        else {
-            let main = document.getElementById('main');
-            let message = document.createElement('div');
-            main.appendChild(message);
-            message.innerHTML = response['message'];
-        }
-    }
-}
-
-function file_upload_callback (e) {
     if (e.readyState === 4 && e.status === 200) {
         let response = JSON.parse(e.response);
         if (response['status'] === 'OK') {
@@ -111,23 +94,23 @@ function split_file(e, reader, obj) {
     if (reader.result) {
         str = reader.result;
         obj.data = str.split(',')[1];
-        sendJSON(obj, e => file_upload_callback(e))
+        sendJSON(obj, e => snapshot_upload_callback(e));
     }
 }
 
 function sendJSON(obj, callback) {
     if (typeof obj !== "object")
-        console.log('Can\'t send non-object');
+        console.log(obj);
     else {
-        var request = JSON.stringify(obj);
-        var xhhtp = new XMLHttpRequest();
-        xhhtp.onreadystatechange = function () {
-            callback(xhhtp)
+        let request = JSON.stringify(obj);
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            callback(xhttp)
         };
-        xhhtp.open('POST', 'upload.php', true);
-        xhhtp.setRequestHeader('Content-Type', "application/json");
-        xhhtp.send(request);
-        return xhhtp.response;
+        xhttp.open('POST', 'upload.php', true);
+        xhttp.setRequestHeader('Content-Type', "application/json");
+        xhttp.send(request);
+        return xhttp.response;
     }
 }
 
@@ -144,7 +127,6 @@ class Profile {
         this.logout_button = document.getElementById('logout_button');
         this.login_message = document.getElementById('login_message');
         this.profile_message = document.getElementById('profile_message');
-        this.reset_button = document.getElementById('reset_button')
         this.email = document.getElementById('login_email');
         this.passw = document.getElementById('login_passw');
 
@@ -164,12 +146,11 @@ class Profile {
                 (e) => profile.toggle_profile_icons(e));
             profile.check_session();
         }
-        console.log('Login button pressed');
+
     }
 
     check_session() {
         sendJSON({action: "check_session"}, (e) => this.toggle_profile_icons(e));
-        console.log('Check_session called');
     }
 
     profile_icons_login() {
@@ -196,20 +177,17 @@ class Profile {
                 document.getElementById('main').style.display = 'flex';
                 document.getElementById('main_not_logged').style.display = 'none';
                 load_cam();
-                console.log('Login OK: ' + response);
             } else {
                 this.profile_icons_logout();
                 if (response['status'] === 'ERROR_LOGIN')
                     document.getElementById('login_message').innerHTML = 'Incorrect login or password';
-                console.log('Login Error: ' + response);
             }
         }
     }
 
     open_profile_callback(e) {
         if (e.readyState === 4 && e.status === 200) {
-            let response;
-            response = JSON.parse(e.response);
+            let response = JSON.parse(e.response);
             document.getElementById('profile_username').innerHTML = response.login;
             document.getElementById('profile_email').innerHTML = response.email;
             if (response.is_confirmed === '1') {
@@ -222,7 +200,6 @@ class Profile {
             if (response.notify === "1")
                 document.getElementById('profile_notify').checked = true;
         }
-        console.log('Show profile');
     }
 
 
@@ -237,7 +214,6 @@ class Profile {
             this.profile_info.style.display = 'none';
             document.getElementById('button_confirmation').innerHTML = 'Resend confirmation e-mail';
         }
-        console.log('Open profile pressed');
     }
 
     reset_password_callback(e) {
@@ -255,7 +231,6 @@ class Profile {
                 },
                 4 * 1000);
         }
-        console.log(e);
     }
 
     reset_password() {
@@ -270,7 +245,6 @@ class Profile {
                 },
                 (e) => this.reset_password_callback(e));
         }
-        console.log("Reset button pressed");
     }
 
     register_callback(e) {
@@ -293,7 +267,6 @@ class Profile {
             email: this.email.value,
             passw: this.passw.value
         }, (e) => this.register_callback(e));
-        console.log("Register button pressed again");
     }
 
     register() {
@@ -303,7 +276,6 @@ class Profile {
         if (this.login_input.validity.valid && this.passw.validity.valid &&
             this.email.validity.valid)
             this.register_send();
-        console.log("Register button pressed");
     }
 
     change_login_callback(e) {
@@ -320,7 +292,6 @@ class Profile {
                 },
                 4 * 1000);
         }
-        console.log(e);
     }
 
     change_login() {
@@ -349,7 +320,6 @@ class Profile {
                 },
                 4 * 1000);
         }
-        console.log(e);
     }
 
     change_email() {
@@ -378,7 +348,6 @@ class Profile {
                 },
                 4 * 1000);
         }
-        console.log(e);
     }
 
     toggle_notify() {
@@ -409,7 +378,6 @@ class Profile {
                 },
                 4 * 1000);
         }
-        console.log(e);
     }
 
     change_passw() {
@@ -547,10 +515,10 @@ class GalleryItemActions {
         this.error_holder.className = 'gallery_item_actions_holder_err_holder';
         this.holder.appendChild(this.error_holder);
 
-        this.like = new Like(this);
+        new Like(this);
         this.comments = new CommentsButton(this);
         if (gal_item.is_del == 1)
-            this.del = new Delete(this);
+            new Delete(this);
     }
 }
 
@@ -655,7 +623,6 @@ class Like {
             sendJSON({'action': 'add_like', 'id': this.id},
                 e => this.add_like_callback(e));
         }
-        console.log('Like_class button ' + this.id + ' pressed');
     }
 
 }
@@ -721,7 +688,6 @@ class Comments1 {
     }
 
     get_comments_callback(event) {
-        console.log('get_comments_callback');
         if (event.readyState === 4 && event.status === 200) {
             let response = JSON.parse(event.response);
             if (response['status'] === 'OK') {
@@ -745,25 +711,6 @@ class Comments1 {
                     4 * 1000);
             }
         }
-    }
-
-    add_info(holder, item) {
-
-        let div1 = document.createElement('div');
-        div1.innerHTML = 'Created by';
-        holder.appendChild(div1);
-
-        let div2 = document.createElement('div');
-        div2.innerHTML = item.user;
-        holder.appendChild(div2);
-
-        let div3 = document.createElement('div');
-        div3.innerHTML = ' at ';
-        holder.appendChild(div3);
-
-        let div4 = document.createElement('div');
-        div4.innerHTML = item.date;
-        holder.appendChild(div4);
     }
 
     send_comment() {
@@ -821,7 +768,6 @@ class Delete {
             id: this.id
         };
         sendJSON(obj, (e) => this.delete_item_callback(e));
-        console.log('Delete button ' + obj.id + ' pressed');
     }
 }
 
@@ -877,7 +823,6 @@ gallery = new Gallery();
 document.addEventListener('click', function (event) {
     let target = event.target;
     let profile_info = document.getElementById('profile');
-    let profile_button = document.getElementById('profile_button');
     if (profile_info.style.display === "flex") {
         if (profile_info.contains(target))
             return;

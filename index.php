@@ -12,12 +12,9 @@ require_once('config/setup.php');
 <body>
 <header class="header">
 	<div id="header_text">CAMAGRU</div>
-	<button class="user" id="login_button" onclick="login_form_toggle(this)"
-			alt="Login"></button>
-	<button class="user" id="profile_button" onclick="profile.open_profile()"
-			alt="Open profile"></button>
-	<button class="user" id="logout_button" onclick="logout()"
-			alt="Logout"></button>
+	<button class="user" id="login_button" onclick="login_form_toggle(this)"/>
+	<button class="user" id="profile_button" onclick="profile.open_profile()"/>
+	<button class="user" id="logout_button" onclick="logout()"/>
 </header>
 <form id="login_form" action="">
 	Log in
@@ -30,15 +27,11 @@ require_once('config/setup.php');
 		   placeholder="e-mail">
 	<div id="login_buttons">
 		<button type="button" onclick="profile.register()" name="action"
-				value="reg">Register
+				value="reg">Register</button>
 		<button type="button" onclick="profile.login()" name="action"
-				value="login">Login
-		</button>
+				value="login">Login</button>
 		<button type="button" id="reset_button" onclick="profile
-		.reset_password()"
-				name="reset_password"
-			value="">Reset password</button>
-		</button>
+		.reset_password()" name="reset_password" value="">Reset password</button>
 	</div>
 	<div id="login_message"></div>
 </form>
@@ -47,7 +40,7 @@ require_once('config/setup.php');
 	<hr id="hr">
 	<div>
 		<label for="profile_username">Login:</label>
-		<span id="profile_username"></span>
+		<span id="profile_username"> </span>
 		<button id="edit_login_button" onclick="profile.show_new_login()">Edit</button>
 	</div>
 	<div id="new_login_form">
@@ -57,7 +50,7 @@ require_once('config/setup.php');
 	</div>
 	<div>
 		<label for="profile_email">E-mail:</label>
-		<span id="profile_email"></span>
+		<span id="profile_email"> </span>
 		<button id="edit_email_button" onclick="profile.show_new_email()
 ">Edit</button>
 	</div>
@@ -68,7 +61,7 @@ require_once('config/setup.php');
 	</div>
 	<div>
 		<label for="profile_email_conf">E-mail confirmed?</label>
-		<span id="profile_email_conf"></span>
+		<span id="profile_email_conf"> </span>
 	</div>
 	<div>
 		<label for="profile_notify">Notify on updates to your photos?</label>
@@ -105,11 +98,10 @@ require_once('config/setup.php');
 				<img id="frame" src="img/frame.png" onclick="select_img(this)"
 					 alt="frame">
 				<img id="none" src="img/none.png" onclick="select_img(this)"
-					 alt="clear
-		 img">
+					 alt="clear img">
 			</div>
 		<div id="videoContainer" hidden>
-			<video id="cam" src="" autoplay poster="img/none.png"></video>
+			<video id="cam" autoplay poster="img/none.png">
 		</div>
 		<form id="upload" enctype="multipart/form-data" action="">
 			<input type="hidden" name="cam" value="">

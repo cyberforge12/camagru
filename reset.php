@@ -26,7 +26,6 @@ function update_passw($hash, $passw, PDO $dbh)
         return null;
 }
 
-//header('refresh:5;url=index.php');
 if (isset($_GET['link'])) {
     $hash = $_GET['link'];
     if ($email = check_reset($hash, $dbh)) {
