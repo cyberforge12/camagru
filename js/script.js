@@ -688,7 +688,7 @@ class Comments1 {
         this.holder.appendChild(this.comments);
 
         this.comment_form = document.createElement('textarea');
-        this.comment_form.className = 'comment_form';
+        this.comment_form.className = 'bg comment_form';
         this.comment_form.style.display = 'none';
         this.holder.appendChild(this.comment_form);
 

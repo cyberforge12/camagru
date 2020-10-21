@@ -10,20 +10,22 @@ require_once('config/setup.php');
 	<title>Camagru</title>
 </head>
 <body>
-<header class="header">
+<header class="bg header">
 	<div id="header_text">CAMAGRU</div>
 	<button class="user" id="login_button" onclick="login_form_toggle(this)"/>
 	<button class="user" id="profile_button" onclick="profile.open_profile()"/>
 	<button class="user" id="logout_button" onclick="logout()"/>
 </header>
-<form id="login_form" action="">
+<form id="login_form" class="bg" action="">
 	Log in
 	<hr>
-	<input id="login_username" type="text" required autofocus name="username"
+	<input id="login_username" class="bg" type="text" required autofocus
+		   name="username"
 		   placeholder="username">
-	<input id="login_passw" type="password" required name="passw" minlength="3"
+	<input id="login_passw" class="bg" type="password" required name="passw"
+		   minlength="3"
 		   placeholder="Password (min 3 characters)">
-	<input id="login_email" type="email" required autofocus name="email"
+	<input id="login_email" class="bg" type="email" required autofocus name="email"
 		   placeholder="e-mail">
 	<div id="login_buttons">
 		<button type="button" onclick="profile.register()" name="action"
@@ -35,7 +37,7 @@ require_once('config/setup.php');
 	</div>
 	<div id="login_message"></div>
 </form>
-<section class="profile" id="profile" hidden>
+<section class="bg profile" id="profile" hidden>
 	Profile
 	<hr id="hr">
 	<div>
@@ -44,7 +46,7 @@ require_once('config/setup.php');
 		<button id="edit_login_button" onclick="profile.show_new_login()">Edit</button>
 	</div>
 	<div id="new_login_form">
-		<input id="new_login_input" placeholder="Enter new login">
+		<input id="new_login_input" class="bg" placeholder="Enter new login">
 		<button id="send_new_login" onclick="profile.change_login()
 ">Send</button>
 	</div>
@@ -55,7 +57,7 @@ require_once('config/setup.php');
 ">Edit</button>
 	</div>
 	<div id="new_email_form">
-		<input id="new_email_input" type="email" placeholder="Enter new email">
+		<input id="new_email_input" class="bg" type="email" placeholder="Enter new email">
 		<button id="send_new_email" onclick="profile.change_email()
 ">Send</button>
 	</div>
@@ -69,7 +71,7 @@ require_once('config/setup.php');
 			   onchange="profile.toggle_notify()">
 	</div>
 	<div id="new_passw_form">
-		<input id="new_passw_input" type="password" placeholder="Enter new
+		<input id="new_passw_input" class="bg" type="password" placeholder="Enter new
 		password">
 		<button id="send_new_passw" onclick="profile.change_passw()
 ">Send</button>
@@ -81,7 +83,7 @@ require_once('config/setup.php');
 	</button>
 	<div id="profile_message"></div>
 </section>
-<section class="content">
+<section class="bg content">
 		<section id="main_not_logged">
 			<div>Please, log in</div>
 		</section>
@@ -123,7 +125,7 @@ require_once('config/setup.php');
 	</section>
 
 </section>
-<footer class="footer">&copy;Чистяков П. В., &copy;mmanhack, 2020</footer>
+<footer class="bg footer">&copy;Чистяков П. В., &copy;mmanhack, 2020</footer>
 <script type="text/javascript" src="js/script.js"></script>
 </body>
 </html>

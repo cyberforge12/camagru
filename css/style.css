@@ -17,10 +17,12 @@ body {
     overflow: auto;
 }
 
-*:not(#overlay) {
-    box-sizing: border-box;
+.bg {
     background-color: #3E3E3C;
-    /*border: 1px solid green;*/
+}
+
+* {
+    box-sizing: border-box;
     color: #E8E9C9;
 }
 
@@ -55,7 +57,8 @@ input:invalid {
     font-weight: bold;
     margin: 10px;
     text-align: center;
-    background-color: gainsboro;
+    background-color: #595956;
+
 }
 
 .header {
