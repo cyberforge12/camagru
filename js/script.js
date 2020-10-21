@@ -1,10 +1,17 @@
 var video = document.getElementById('cam');
 var localMediaStream = null;
-var selected_img = null;
+var selected_img = document.getElementById("discount");
 var display_login = false;
 var track = null;
 var video_ratio = null;
 var snapshot_button = document.getElementById('snapshot');
+const image = Object.freeze({
+    "frame": "/img/frame.png",
+   "stars": "/img/stars.png",
+    "discount": "/img/discount.png",
+    "think": "/img/think.png",
+    "none": "/img/none.png"
+});
 
 function resend_confirmation() {
     sendJSON({"action": "resend"}, () => {
@@ -43,10 +50,7 @@ function select_img(item) {
         item.style.border = '3px solid red';
         selected_img = item;
     }
-    if (selected_img)
-        snapshot_button.removeAttribute('disabled');
-    else
-        snapshot_button.setAttribute('disabled', '');
+    new Overlay(item.id);
 }
 
 function snapshot_upload_callback (e) {
@@ -111,6 +115,49 @@ function sendJSON(obj, callback) {
         xhttp.setRequestHeader('Content-Type', "application/json");
         xhttp.send(request);
         return xhttp.response;
+    }
+}
+
+class Overlay {
+
+    constructor(o) {
+        this.holder = document.getElementById("overlay");
+        this.cam = document.getElementById("cam");
+        this.holder.src = `${image[o]}`;
+        this.holder.style.removeProperty("left");
+        this.holder.style.removeProperty("height");
+        this.holder.style.removeProperty("width");
+        this.holder.style.removeProperty("top");
+        this.holder.style.removeProperty("height");
+
+        if (["frame", "stars"].includes(o)) {
+            this.holder.style.left = 0;
+            this.holder.style.width = "100%";
+        }
+        else if (o === "think") {
+            this.holder.style.left = "75%";
+            this.holder.style.width = "25%";
+        }
+        else if (o === "discount") {
+            this.holder.style.left = 0;
+            this.holder.style.top = "75%";
+            this.holder.style.height = "25%";
+        }
+        else if (o === "none") {
+            this.holder.style.left = "37.5%";
+            this.holder.style.top = "37.5%";
+            this.holder.style.width = "25%";
+        }
+
+        this.video_w = this.cam.videoWidth;
+        this.video_h = this.cam.videoHeight;
+        this.dst_y = 0;
+        this.dst_w = 0;
+        this.dst_h = 0;
+        this.img = new Image();
+        this.img.onload = function() {
+            alert(this.width + 'x' + this.height);
+        }
     }
 }
 
@@ -819,6 +866,7 @@ function load_cam() {
 check_template();
 profile = new Profile();
 gallery = new Gallery();
+new Overlay(selected_img.id);
 
 document.addEventListener('click', function (event) {
     let target = event.target;

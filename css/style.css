@@ -17,7 +17,7 @@ body {
     overflow: auto;
 }
 
-* {
+*:not(#overlay) {
     box-sizing: border-box;
     background-color: #3E3E3C;
     /*border: 1px solid green;*/
@@ -55,6 +55,7 @@ input:invalid {
     font-weight: bold;
     margin: 10px;
     text-align: center;
+    background-color: gainsboro;
 }
 
 .header {
@@ -230,14 +231,32 @@ input:invalid {
 
 #videoContainer {
     display: none;
+    text-align: center;
     height: 50%;
     justify-content: center;
+    position: relative;
 }
 
 #cam {
-    background-size: inherit;
+    position: relative;
     max-height: 100%;
-    opacity: 0.5;
+    max-width: 100%;
+    z-index: 2;
+}
+
+#cont {
+    height: 100%;
+    width: max-content;
+    z-index: 1;
+    position: relative;
+}
+
+#overlay {
+    z-index: 10;
+    position: absolute;
+    max-width: 100%;
+    max-height: 100%;
+    text-align: center;
 }
 
 #snapshot {

@@ -88,9 +88,9 @@ require_once('config/setup.php');
 	<main class="main" id="main">
 			<div id="pics_header">Select an overlay image:</div>
 			<div id="pics">
-				<img id="discount" src="img/discount.png"
-					 onclick="select_img(this)"
-					 alt="discount">
+				<img id="discount" style="border: 3px solid red"
+					 src="img/discount.png"
+					 onclick="select_img(this)" alt="discount">
 				<img id="stars" src="img/stars.png" onclick="select_img(this)"
 					 alt="stars">
 				<img id="think" src="img/think.png" onclick="select_img(this)"
@@ -101,7 +101,10 @@ require_once('config/setup.php');
 					 alt="clear img">
 			</div>
 		<div id="videoContainer" hidden>
-			<video id="cam" autoplay poster="img/none.png">
+			<div id="cont">
+				<video id="cam" autoplay poster="img/none.png"></video>
+				<img id="overlay" src="" alt="overlay image">
+			</div>
 		</div>
 		<form id="upload" enctype="multipart/form-data" action="">
 			<input type="hidden" name="cam" value="">
@@ -113,7 +116,7 @@ require_once('config/setup.php');
 			photo to upload..." type="file" accept="image/*"/>
 		</form>
 		<button class="text_button" id="snapshot" onclick="snapshot()"
-				disabled title="Select as overlay image above">SEND
+				title="Select as overlay image above">SEND
 		</button>
 	</main>
 	<section class="side" id="side">
