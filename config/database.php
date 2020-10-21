@@ -5,7 +5,8 @@ $DB_USER = 'dbuser';
 $DB_PASSWORD = 'dbpass';
 $sql_create_db = "create database `camagru.sqlite`;";
 
-@mkdir(ROOT_PATH . 'db');
+if (!is_dir(ROOT_PATH . 'db'))
+    @mkdir(ROOT_PATH . 'db');
 
 $recreate = false;
 if (file_exists(ROOT_PATH . 'db/' . DB_NAME) && $recreate == true)

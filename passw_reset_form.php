@@ -6,13 +6,14 @@
 	<title>Camagru - password reset</title>
 </head>
 <body>
-<form action="reset.php" method="post">
+<form action="reset.php" class="bg" method="post">
     Password reset
 <hr>
 	<div>Enter new password:</div>
 	<input type="password" required name="passw"
 	minlength="3" placeholder="Password (min 3 characters)">
-	<input type="text" required hidden name="hash" value="<?=$hash?>">
+	<input type="text" class="bg" required hidden name="hash"
+		   value="<?=$hash?>">
 	<input type="submit" name="reset_password" placeholder="Reset
 	password">
 </form>

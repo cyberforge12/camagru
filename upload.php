@@ -349,7 +349,7 @@ function send_notification ($user, $photo_id, PDO $dbh) {
     $sth->bindValue(1, $photo_id);
     if ($sth->execute()) {
         if (($email = $sth->fetch()))
-            return mail($email, 'Camagru - ' . $user . ' commented your photo',
+            return mail($email[0], 'Camagru - ' . $user . ' commented your photo',
                 $user . ' posted a comment to your photo on Camagru website (http://' .
                 $_SERVER['HTTP_HOST'] . ').');
     }
