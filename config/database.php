@@ -3,7 +3,7 @@ $DB_FILE = ROOT_PATH . 'db/' . DB_NAME;
 $DB_DSN = 'sqlite:' . $DB_FILE;
 $DB_USER = 'dbuser';
 $DB_PASSWORD = 'dbpass';
-$sql_create_db = "create database `camagru.sqlite`;";
+$sql_create_db = "create database if not 'camagru.sqlite';";
 
 if (!is_dir(ROOT_PATH . 'db'))
     @mkdir(ROOT_PATH . 'db');
@@ -15,7 +15,7 @@ if (file_exists(ROOT_PATH . 'db/' . DB_NAME) && $recreate == true)
 try {
     global $dbh;
     $dbh = new PDO($DB_DSN, $DB_USER, $DB_PASSWORD);
-    $dbh->exec($sql_create_db);
+    $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $dbh->exec('create table if not exists User(
         user char(255) primary key,
         email,
