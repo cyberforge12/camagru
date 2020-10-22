@@ -91,22 +91,16 @@ require_once('config/setup.php');
 	<main class="main" id="main">
 			<div id="pics_header">Select an overlay image:</div>
 			<div id="pics">
-				<img id="discount" style="border: 3px solid red"
-					 src="img/discount.png"
-					 onclick="select_img(this)" alt="discount">
-				<img id="stars" src="img/stars.png" onclick="select_img(this)"
-					 alt="stars">
-				<img id="think" src="img/think.png" onclick="select_img(this)"
-					 alt="stars">
-				<img id="frame" src="img/frame.png" onclick="select_img(this)"
-					 alt="frame">
-				<img id="none" src="img/none.png" onclick="select_img(this)"
-					 alt="clear img">
+				<img id="discount" src="img/discount.png" alt="discount">
+				<img id="stars" src="img/stars.png" alt="stars">
+				<img id="think" src="img/think.png" alt="stars">
+				<img id="frame" src="img/frame.png" alt="frame">
+				<img id="none" src="img/none.png" alt="clear img">
 			</div>
 		<div id="videoContainer" hidden>
 			<div id="cont">
 				<video id="cam" autoplay poster="img/none.png"></video>
-				<img id="overlay" src="" alt="overlay image">
+				<img class="overlay" src="" alt="overlay image" hidden>
 			</div>
 		</div>
 		<form id="upload" enctype="multipart/form-data" action="">
@@ -119,7 +113,7 @@ require_once('config/setup.php');
 			photo to upload..." type="file" accept="image/*"/>
 		</form>
 		<button class="text_button" id="snapshot" onclick="snapshot()"
-				title="Select as overlay image above">SEND
+				title="Select as overlay image above" disabled>SEND
 		</button>
 	</main>
 	<section class="side" id="side">

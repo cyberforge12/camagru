@@ -1,13 +1,14 @@
 var video = document.getElementById('cam');
 var localMediaStream = null;
 var selected_img = document.getElementById("discount");
+var selected_images = [];
 var display_login = false;
 var track = null;
 var video_ratio = null;
 var snapshot_button = document.getElementById('snapshot');
 const image = Object.freeze({
     "frame": "/img/frame.png",
-   "stars": "/img/stars.png",
+    "stars": "/img/stars.png",
     "discount": "/img/discount.png",
     "think": "/img/think.png",
     "none": "/img/none.png"
@@ -50,7 +51,6 @@ function select_img(item) {
         item.style.border = '3px solid red';
         selected_img = item;
     }
-    new Overlay(item.id);
 }
 
 function snapshot_upload_callback (e) {
@@ -71,7 +71,7 @@ function snapshot_upload_callback (e) {
 function snapshot() {
     let obj = {};
     obj.action = 'image_upload';
-    obj.img_name = selected_img.id;
+    obj.images = selected_images;
     if (localMediaStream) {
         let canvas = document.createElement('canvas');
         let context = canvas.getContext('2d');
@@ -118,45 +118,107 @@ function sendJSON(obj, callback) {
     }
 }
 
+class StickerFactory {
+
+    constructor() {
+        this.types = image;
+        this.stickers = this.set_stickers();
+    }
+
+    set_stickers() {
+        let stickers = [];
+        let names = Object.keys(this.types);
+        names.forEach(i => stickers.push(this.create_sticker(i)));
+        return stickers;
+    }
+
+    create_sticker (name) {
+        let top = undefined;
+        let left = undefined;
+        let width = undefined;
+        let height = undefined;
+        if (["frame", "stars"].includes(name)) {
+            left = 0;
+            width = "100%";
+        }
+        else if (name === "think") {
+            left = "75%";
+            width = "25%";
+        }
+        else if (name === "discount") {
+            left = 0;
+            top = "75%";
+            height = "25%";
+        }
+        else if (name === "none") {
+            left = "37.5%";
+            top = "37.5%";
+            width = "25%";
+        }
+        return new Sticker(name)
+    }
+}
+
+class Sticker {
+
+    constructor(name) {
+        this.name = name;
+        this._selected = false;
+        this.snapshot = document.getElementById('snapshot');
+
+        this.holder = document.getElementById(name);
+        this.holder.addEventListener('click', () => this.toggle_sticker());
+
+        this.overlay = new Overlay(name);
+    }
+
+    toggle_sticker() {
+        this._selected = this._selected === false;
+        if (this._selected === true) {
+            this.holder.style.border = "3px solid red";
+            this.overlay.holder.removeAttribute('hidden');
+            selected_images.push(this.name);
+            this.snapshot.removeAttribute('disabled');
+        }
+        else {
+            this.holder.style.border = "";
+            this.overlay.holder.hidden = true;
+            selected_images.splice(selected_images.indexOf(this.name), 1);
+        }
+        if (selected_images.length === 0)
+            document.getElementById('snapshot').disabled = true;
+    }
+}
+
 class Overlay {
 
-    constructor(o) {
-        this.holder = document.getElementById("overlay");
-        this.cam = document.getElementById("cam");
-        this.holder.src = `${image[o]}`;
-        this.holder.style.removeProperty("left");
-        this.holder.style.removeProperty("height");
-        this.holder.style.removeProperty("width");
-        this.holder.style.removeProperty("top");
-        this.holder.style.removeProperty("height");
+    constructor(name) {
+        this.holder = document.createElement('img');
+        this.holder.className = "overlay";
+        this.holder.hidden = true;
+        this.holder.src = `${image[name]}`;
+        this.container = document.getElementById("cont");
+        this.container.appendChild(this.holder);
 
-        if (["frame", "stars"].includes(o)) {
+        if (["frame", "stars"].includes(name)) {
+            this.holder.style.top = 0;
             this.holder.style.left = 0;
             this.holder.style.width = "100%";
         }
-        else if (o === "think") {
+        else if (name === "think") {
+            this.holder.style.top = 0;
             this.holder.style.left = "75%";
             this.holder.style.width = "25%";
         }
-        else if (o === "discount") {
+        else if (name === "discount") {
             this.holder.style.left = 0;
             this.holder.style.top = "75%";
             this.holder.style.height = "25%";
         }
-        else if (o === "none") {
+        else if (name === "none") {
             this.holder.style.left = "37.5%";
             this.holder.style.top = "37.5%";
             this.holder.style.width = "25%";
-        }
-
-        this.video_w = this.cam.videoWidth;
-        this.video_h = this.cam.videoHeight;
-        this.dst_y = 0;
-        this.dst_w = 0;
-        this.dst_h = 0;
-        this.img = new Image();
-        this.img.onload = function() {
-            alert(this.width + 'x' + this.height);
         }
     }
 }
@@ -866,6 +928,7 @@ function load_cam() {
 check_template();
 profile = new Profile();
 gallery = new Gallery();
+new StickerFactory();
 new Overlay(selected_img.id);
 
 document.addEventListener('click', function (event) {

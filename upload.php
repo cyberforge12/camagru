@@ -4,29 +4,26 @@ require_once('constants.php');
 require_once ('config/setup.php');
 require_once ('Paginator.class.php');
 
-function create_img($arr) {
-    $overlay = ROOT_PATH . 'img/' . $arr->img_name . '.png';
-    if (!($dst_cam = imagecreatefromstring(base64_decode($arr->data))))
-        return false;
-    $src_ovl = imagecreatefrompng($overlay);
-    $dst_sx = imagesx($dst_cam);
-    $dst_sy = imagesy($dst_cam);
-    if (in_array($arr->img_name, ['frame', 'stars']))
-        imagecopyresized($dst_cam, $src_ovl, 0, 0, 0, 0,
-        $dst_sx, $dst_sy, imagesx($src_ovl), imagesy($src_ovl));
-    elseif ($arr->img_name === 'think')
-        imagecopyresized($dst_cam, $src_ovl, $dst_sx * 0.75, 50,
-            0, 0, $dst_sx * 0.25, $dst_sy * 0.25, imagesx($src_ovl), imagesy
-    ($src_ovl));
-    elseif ($arr->img_name === 'discount')
-        imagecopyresized($dst_cam, $src_ovl, 0, $dst_sy - 150,
-            0, 0, 150, 150, imagesx($src_ovl), imagesy($src_ovl));
-    elseif ($arr->img_name === 'none')
-        imagecopyresized($dst_cam, $src_ovl, $dst_sx / 2 - 150, $dst_sy / 2 -
+function create_img($dst_gd, $overlay) {
+    $overlay_gd = imagecreatefrompng(ROOT_PATH . 'img/' . $overlay . '.png');
+    $dst_sx = imagesx($dst_gd);
+    $dst_sy = imagesy($dst_gd);
+    if (in_array($overlay, ['frame', 'stars']))
+        imagecopyresized($dst_gd, $overlay_gd, 0, 0, 0, 0,
+        $dst_sx, $dst_sy, imagesx($overlay_gd), imagesy($overlay_gd));
+    elseif ($overlay === 'think')
+        imagecopyresized($dst_gd, $overlay_gd, $dst_sx * 0.75, 50,
+            0, 0, $dst_sx * 0.25, $dst_sy * 0.25, imagesx($overlay_gd), imagesy
+    ($overlay_gd));
+    elseif ($overlay === 'discount')
+        imagecopyresized($dst_gd, $overlay_gd, 0, $dst_sy - 150,
+            0, 0, 150, 150, imagesx($overlay_gd), imagesy($overlay_gd));
+    elseif ($overlay === 'none')
+        imagecopyresized($dst_gd, $overlay_gd, $dst_sx / 2 - 150, $dst_sy / 2 -
             150, 0, 0, 300, 300,
-            imagesx($src_ovl), imagesy($src_ovl));
-    imagedestroy($src_ovl);
-    return ($dst_cam);
+            imagesx($overlay_gd), imagesy($overlay_gd));
+    imagedestroy($overlay_gd);
+    return ($dst_gd);
 }
 
 function get_session_user (PDO $dbh) {
@@ -42,8 +39,13 @@ function get_session_user (PDO $dbh) {
 }
 
 function process_image($arr, PDO $dbh) {
-    if (($merged = create_img($arr)) == false)
-        return ['status' => 'Error', 'message' => 'Incorrect image format'];
+    if (!($merged = imagecreatefromstring(base64_decode($arr->data))))
+        return false;
+    foreach ($arr->images as $image) {
+        $merged = create_img($merged, $image);
+        if ($merged == false)
+            return ['status' => 'Error', 'message' => 'Incorrect image format'];
+    }
     ob_start();
     imagepng($merged);
     $image_data = ob_get_contents();
