@@ -540,7 +540,7 @@ class GalleryItem {
         add_info(gallery_item_info, this.owner, this.datetime);
 
         this.actions = new GalleryItemActions(this);
-        this.comments = new Comments1(this);
+        this.comments = new Comments(this);
     }
 
 }
@@ -674,7 +674,7 @@ class Like {
 
 }
 
-class Comments1 {
+class Comments {
 
     constructor(gallery_item) {
         this.parent = gallery_item;

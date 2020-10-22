@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once('constants.php');
-require_once ('config/database.php');
+require_once ('config/setup.php');
 require_once ('Paginator.class.php');
 
 function create_img($arr) {
@@ -314,7 +314,7 @@ function add_comment ($arr, PDO $dbh) {
         $request = 'INSERT INTO Comment (text, user, photo)
             VALUES (?, ?, ?)';
         $sth = $dbh->prepare($request);
-        $sth->bindValue(1, $arr->data);
+        $sth->bindValue(1, strip_tags($arr->data));
         $sth->bindValue(2, $user);
         $sth->bindValue(3, $arr->id);
         if ($sth->execute()) {
