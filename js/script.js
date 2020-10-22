@@ -5,7 +5,6 @@ var selected_images = [];
 var display_login = false;
 var track = null;
 var video_ratio = null;
-var snapshot_button = document.getElementById('snapshot');
 const image = Object.freeze({
     "frame": "/img/frame.png",
     "stars": "/img/stars.png",
@@ -34,22 +33,6 @@ function login_form_toggle() {
     } else {
         login.style.removeProperty('display');
         display_login = false;
-    }
-}
-
-function select_img(item) {
-    if (selected_img) {
-        if (selected_img === item) {
-            selected_img.style.border = '';
-            selected_img = null;
-        } else {
-            item.style.border = '3px solid red';
-            selected_img.style.border = '';
-            selected_img = item;
-        }
-    } else {
-        item.style.border = '3px solid red';
-        selected_img = item;
     }
 }
 
@@ -128,34 +111,8 @@ class StickerFactory {
     set_stickers() {
         let stickers = [];
         let names = Object.keys(this.types);
-        names.forEach(i => stickers.push(this.create_sticker(i)));
+        names.forEach(i => stickers.push(new Sticker(i)));
         return stickers;
-    }
-
-    create_sticker (name) {
-        let top = undefined;
-        let left = undefined;
-        let width = undefined;
-        let height = undefined;
-        if (["frame", "stars"].includes(name)) {
-            left = 0;
-            width = "100%";
-        }
-        else if (name === "think") {
-            left = "75%";
-            width = "25%";
-        }
-        else if (name === "discount") {
-            left = 0;
-            top = "75%";
-            height = "25%";
-        }
-        else if (name === "none") {
-            left = "37.5%";
-            top = "37.5%";
-            width = "25%";
-        }
-        return new Sticker(name)
     }
 }
 
@@ -752,6 +709,7 @@ class Comments {
         this.comment_form = document.createElement('textarea');
         this.comment_form.className = 'bg comment_form';
         this.comment_form.style.display = 'none';
+        this.comment_form.minLength = "10";
         this.holder.appendChild(this.comment_form);
 
         if (profile.login_name) {

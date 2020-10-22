@@ -94,7 +94,7 @@ function check_login ($login, $passw, PDO $dbh) {
 }
 
 function login ($arr, $dbh) {
-    $login = $arr->login;
+    $login = strip_tags($arr->login);
     $passw = hash('whirlpool', $arr->passw);
     $token = check_login($login, $passw, $dbh);
     if ($token == 1)
@@ -168,8 +168,8 @@ function register ($arr, $dbh) {
     else {
         $query = 'INSERT INTO User VALUES (?, ?, ?, false, true)';
         $sth = $dbh->prepare($query);
-        $sth->bindValue(1, $arr->login, PDO::PARAM_STR);
-        $sth->bindValue(2, $arr->email, PDO::PARAM_STR);
+        $sth->bindValue(1, strip_tags($arr->login), PDO::PARAM_STR);
+        $sth->bindValue(2, strip_tags($arr->email), PDO::PARAM_STR);
         $sth->bindValue(3, hash('whirlpool', $arr->passw), PDO::PARAM_STR);
         if ($sth->execute())
         {
@@ -387,7 +387,7 @@ function change_login ($arr, PDO $dbh) {
         $user = get_session_user($dbh);
         $request = "UPDATE User SET user = ? WHERE user = ?";
         $sth = $dbh->prepare($request);
-        $sth->bindValue(1, $arr->login, PDO::PARAM_STR);
+        $sth->bindValue(1, strip_tags($arr->login), PDO::PARAM_STR);
         $sth->bindValue(2, $user, PDO::PARAM_STR);
         if ($sth->execute()) {
             update_session($arr->login, $dbh);
@@ -404,7 +404,7 @@ function change_email ($arr, PDO $dbh) {
     $user = get_session_user($dbh);
     $request = "UPDATE User SET email = ? WHERE user = ?";
     $sth = $dbh->prepare($request);
-    $sth->bindValue(1, $arr->email, PDO::PARAM_STR);
+    $sth->bindValue(1, strip_tags($arr->email), PDO::PARAM_STR);
     $sth->bindValue(2, $user, PDO::PARAM_STR);
     if ($sth->execute())
         return ['status' => 'OK', 'message' => 'E-mail changed'];

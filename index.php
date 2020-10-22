@@ -22,7 +22,8 @@ require_once('config/setup.php');
 	<hr>
 	<input id="login_username" class="bg" type="text" required autofocus
 		   name="username"
-		   placeholder="username">
+		   placeholder="username" pattern="([a-z]|[A-Z])+"
+		   title="Allowed symbols: a-z, A-Z">
 	<input id="login_passw" class="bg" type="password" required name="passw"
 		   minlength="3"
 		   placeholder="Password (min 3 characters)">
@@ -47,7 +48,8 @@ require_once('config/setup.php');
 		<button id="edit_login_button" onclick="profile.show_new_login()">Edit</button>
 	</div>
 	<div id="new_login_form">
-		<input id="new_login_input" class="bg" placeholder="Enter new login">
+		<input id="new_login_input" class="bg" placeholder="Enter new login"
+			   pattern="([a-z]|[A-Z])+" title="Allowed symbols: a-z, A-Z">
 		<button id="send_new_login" onclick="profile.change_login()
 ">Send</button>
 	</div>
@@ -118,7 +120,6 @@ require_once('config/setup.php');
 	</main>
 	<section class="side" id="side">
 	</section>
-
 </section>
 <footer class="bg footer">&copy;Чистяков П. В., &copy;mmanhack, 2020</footer>
 <script type="text/javascript" src="js/script.js"></script>
