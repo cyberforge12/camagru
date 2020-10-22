@@ -5,8 +5,6 @@ class Paginator
 {
     private PDO $_dbh;
     private $_query;
-    private $_limit;
-    private $_page;
     private $_user;
 
     public function __construct($dbh, $query, $user)
@@ -57,14 +55,11 @@ class Paginator
 
     public function getData($limit = 10, $page = 1)
     {
-        $this->_limit = $limit;
-        $this->_page = $page;
-
-        if ($this->_limit === 'all')
+        if ($limit === 'all')
             $query = $this->_query;
         else
-            $query = $this->_query . " LIMIT " . ($this->_page - 1) *
-                $this->_limit . ", $this->_limit";
+            $query = $this->_query . " LIMIT " . ($page - 1) *
+                $limit . ", $limit";
         $sth = $this->_dbh->prepare($query);
         $sth->execute();
 
@@ -79,8 +74,8 @@ class Paginator
         }
 
         $result = new stdClass();
-        $result->limit = $this->_limit;
-        $result->page = $this->_page;
+        $result->limit = $limit;
+        $result->page = $page;
         $result->rows = count($results);
         $result->data = $results;
 

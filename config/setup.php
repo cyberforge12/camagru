@@ -1,5 +1,4 @@
 <?php
-require_once('SessionHandlerSQL.class.php');
 require_once('config/database.php');
 
 if (!is_dir(ROOT_PATH . 'db'))
