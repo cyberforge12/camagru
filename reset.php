@@ -1,7 +1,7 @@
 <?php
 
 require_once("constants.php");
-require_once("config/database.php");
+require_once("config/setup.php");
 
 function check_reset($link, PDO $dbh)
 {

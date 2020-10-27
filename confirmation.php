@@ -1,6 +1,6 @@
 <?php
 require_once('constants.php');
-require_once ('config/database.php');
+require_once ('config/setup.php');
 
 function check_confirmation ($link, PDO $dbh) {
     $request = 'SELECT email from EmailConfirmation WHERE id = ?';

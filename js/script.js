@@ -66,12 +66,14 @@ function snapshot() {
         sendJSON(obj, e => snapshot_upload_callback(e))
     } else {
         let file = document.getElementById("form_file");
-        if ( /\.(jpe?g|png|gif)$/i.test(file.files[0].name) === false )
-            alert("Invalid file! Please, upload an image (jpeg, png or gif).");
-        else if (file) {
-            let reader = new FileReader();
-            reader.onload = (e) => split_file(e, reader, obj);
-            reader.readAsDataURL(file.files[0]);
+        if (file.files.length > 0) {
+            if ( /\.(jpe?g|png|gif)$/i.test(file.files[0].name) === false )
+                alert("Invalid file! Please, upload an image (jpeg, png or gif).");
+            else {
+                let reader = new FileReader();
+                reader.onload = (e) => split_file(e, reader, obj);
+                reader.readAsDataURL(file.files[0]);
+            }
         }
     }
 }
