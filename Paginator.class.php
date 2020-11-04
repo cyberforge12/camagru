@@ -3,7 +3,7 @@
 
 class Paginator
 {
-    private PDO $_dbh;
+    private $_dbh;
     private $_query;
     private $_user;
 

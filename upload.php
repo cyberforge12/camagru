@@ -26,7 +26,7 @@ function create_img($dst_gd, $overlay) {
     return ($dst_gd);
 }
 
-function get_session_user (PDO $dbh) {
+function get_session_user ($dbh) {
     $request = 'SELECT session_user FROM
         (SELECT *, max(datetime) FROM Session GROUP BY session_id)
         WHERE session_id = ?';
@@ -38,7 +38,7 @@ function get_session_user (PDO $dbh) {
     return null;
 }
 
-function process_image($arr, PDO $dbh) {
+function process_image($arr, $dbh) {
     if (!($merged = imagecreatefromstring(base64_decode($arr->data))))
         return false;
     foreach ($arr->images as $image) {

@@ -868,7 +868,8 @@ function check_template() {
 }
 
 function load_cam() {
-    navigator.mediaDevices.getUserMedia({video: true})
+    let q = Navigator()
+    q.mediaDevices.getUserMedia({video: true})
         .then(function (stream) {
             if (stream) {
                 video.srcObject = stream;
